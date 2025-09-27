@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew build)",
+      "Bash(move \"C:\\Users\\27385\\IdeaProjects\\MMC2\\temp\\MultiAppScreen_new.kt\" \"C:\\Users\\27385\\IdeaProjects\\MMC2\\src\\main\\java\\dev\\mmc\\xingtuan\\core\\ui\\MultiAppScreen.kt\")",
+      "Bash(powershell \"Get-Content ''C:\\Users\\27385\\IdeaProjects\\MMC2\\src\\main\\java\\dev\\mmc\\xingtuan\\core\\ui\\components\\TopAppBar.kt'' | Select-Object -Last 10\")",
+      "Bash(./gradlew compileKotlin)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

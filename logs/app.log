@@ -1,0 +1,20 @@
+17:06:03.127 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+17:06:04.265 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+17:06:07.465 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 默认蓝
+17:06:08.624 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+17:06:11.919 [AWT-EventQueue-0] INFO  MultiAppScreen - Search clicked
+17:06:13.078 [AWT-EventQueue-0] INFO  MultiAppScreen - Search clicked
+17:06:13.289 [AWT-EventQueue-0] INFO  MultiAppScreen - Search clicked
+17:06:19.748 [AWT-EventQueue-0] INFO  SettingsDialog - Settings dismissed
+17:06:31.005 [AWT-EventQueue-0] INFO  MultiAppScreen - Sending message: 1
+17:06:31.006 [AWT-EventQueue-0] INFO  MultiAppScreen - Current member: 12, Current conversation: 12312
+17:06:31.130 [AWT-EventQueue-0] INFO  MultiAppScreen - Created new message with content: 1
+17:06:31.131 [AWT-EventQueue-0] INFO  MultiAppScreen - Before update - currentConversation messages count: 3, after update: 4
+17:06:31.131 [AWT-EventQueue-0] INFO  MultiAppScreen - Before update - conversationConfig conversationsList size: 1
+17:06:31.131 [AWT-EventQueue-0] INFO  MultiAppScreen - Updating conversation a0b48893-b6af-4e39-89d2-e4cbf725aa8e with 4 messages
+17:06:31.131 [AWT-EventQueue-0] INFO  MultiAppScreen - Updated conversations list size: 1
+17:06:31.301 [AWT-EventQueue-0] INFO  MultiAppScreen - Updated ConversationManager conversations list, size: 1
+17:06:31.302 [AWT-EventQueue-0] INFO  MultiAppScreen - First conversation messages count: 4
+17:06:31.302 [AWT-EventQueue-0] INFO  MultiAppScreen - Updating UI state...
+17:06:31.302 [AWT-EventQueue-0] INFO  MultiAppScreen - Updated UI state, conversationConfig conversationsList size: 1
+17:06:31.302 [AWT-EventQueue-0] INFO  MultiAppScreen - UI state - First conversation messages count: 4
