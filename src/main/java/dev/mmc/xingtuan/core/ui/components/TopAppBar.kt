@@ -1,17 +1,15 @@
 package dev.mmc.xingtuan.core.ui.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.mmc.xingtuan.core.MMC2
 
 data class AppTheme(
@@ -34,25 +32,23 @@ fun TopAppBar(
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var currentTheme by remember { mutableStateOf(getCurrentTheme()) }
+    // 监听主题更新触发器
+    LaunchedEffect(themeUpdateTrigger) {
+        currentTheme = getCurrentTheme()
+    }
 
     TopAppBar(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.Start
             ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "MMC2 Logo",
-                    tint = MaterialTheme.colors.onPrimary,
-                    modifier = Modifier.size(24.dp)
-                )
                 Text(
-                    text = "MMC2.NAME",
+                    text = MMC2.NAME,
                     style = MaterialTheme.typography.h6.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = MaterialTheme.colors.onPrimary
+                    color = currentTheme.secondaryColor
                 )
             }
         },
@@ -65,7 +61,7 @@ fun TopAppBar(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "搜索",
-                    tint = MaterialTheme.colors.onPrimary
+                    tint = currentTheme.secondaryColor
                 )
             }
 
@@ -77,7 +73,7 @@ fun TopAppBar(
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "个性化",
-                    tint = MaterialTheme.colors.onPrimary
+                    tint = currentTheme.secondaryColor
                 )
             }
 
@@ -89,7 +85,7 @@ fun TopAppBar(
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = "更多选项",
-                    tint = MaterialTheme.colors.onPrimary
+                    tint = currentTheme.secondaryColor
                 )
             }
 
@@ -220,11 +216,11 @@ fun TopAppBar(
 }
 
 // 预定义主题
-val themes = listOf(
+var themes = mutableListOf(
     AppTheme(
-        name = "默认蓝",
-        primaryColor = Color(0xFF1976D2),
-        secondaryColor = Color.White,
+        name = "米白",
+        primaryColor = Color(0xFFF5F5F0), // 米白色
+        secondaryColor = Color(0xFF333333), // 深灰色文字
         backgroundColor = Color(0xFFF5F5F5)
             ),
     AppTheme(
@@ -249,17 +245,23 @@ val themes = listOf(
         name = "深邃夜",
         primaryColor = Color(0xFF121212),
         secondaryColor = Color(0xFFE0E0E0),
-        backgroundColor = Color(0xFF1E1E1E)
+        backgroundColor = Color(0xFFEEEDED)
     )
 )
 
 // 主题管理
 private var currentThemeIndex = 0
+private var themeUpdateTrigger by mutableStateOf(0) // 用于触发UI更新
+
+// 全局主题状态
+val GlobalTheme = mutableStateOf(themes[currentThemeIndex])
 
 fun getCurrentTheme(): AppTheme = themes[currentThemeIndex]
 
 fun setTheme(index: Int) {
     currentThemeIndex = index.coerceIn(0, themes.size - 1)
+    GlobalTheme.value = themes[currentThemeIndex]
+    themeUpdateTrigger++ // 触发状态更新
 }
 
 fun getCurrentThemeIndex(): Int = currentThemeIndex
@@ -273,4 +275,23 @@ fun saveThemePreference(index: Int) {
 fun loadThemePreference(): Int {
     // 这里可以从文件或数据库加载
     return getCurrentThemeIndex()
+}
+
+// 创建自定义主题
+fun createCustomTheme(primaryColor: Color, secondaryColor: Color, backgroundColor: Color): AppTheme {
+    return AppTheme(
+        name = "自定义",
+        primaryColor = primaryColor,
+        secondaryColor = secondaryColor,
+        backgroundColor = backgroundColor
+    )
+}
+
+// 应用自定义主题
+fun applyCustomTheme(primaryColor: Color, secondaryColor: Color, backgroundColor: Color) {
+    val customTheme = createCustomTheme(primaryColor, secondaryColor, backgroundColor)
+    // 将自定义主题替换第一个主题的位置
+    themes[0] = customTheme
+    GlobalTheme.value = customTheme
+    themeUpdateTrigger++
 }

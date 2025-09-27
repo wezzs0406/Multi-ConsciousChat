@@ -5,10 +5,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -85,7 +84,7 @@ fun AboutDialog(
                                 color = MaterialTheme.colors.onSurface
                             )
                             Text(
-                                text = "MMC2.NAME",
+                                text = MMC2.NAME,
                                 style = MaterialTheme.typography.body1,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colors.onSurface
@@ -104,7 +103,7 @@ fun AboutDialog(
                                 color = MaterialTheme.colors.onSurface
                             )
                             Text(
-                                text = "MMC2.VERSION",
+                                text = MMC2.VERSION,
                                 style = MaterialTheme.typography.body1,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colors.onSurface
@@ -148,7 +147,7 @@ fun AboutDialog(
                             color = MaterialTheme.colors.onSurface
                         )
                         Text(
-                            text = "MMC2.DESCRIPTION",
+                            text = MMC2.DESCRIPTION,
                             style = MaterialTheme.typography.caption,
                             color = MaterialTheme.colors.onSurface,
                             lineHeight = 20.sp
@@ -158,7 +157,7 @@ fun AboutDialog(
 
                 // 版权信息
                 Text(
-                    text = "MMC2.COPYRIGHT",
+                    text = MMC2.COPYRIGHT,
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center,
@@ -173,7 +172,7 @@ fun AboutDialog(
                     }
                 ) {
                     Text(
-                        text = "MMC2.WEBSITE",
+                        text = MMC2.WEBSITE,
                         style = MaterialTheme.typography.caption,
                         color = MaterialTheme.colors.primary
                     )

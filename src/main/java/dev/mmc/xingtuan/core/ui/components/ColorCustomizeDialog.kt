@@ -1,6 +1,7 @@
 package dev.mmc.xingtuan.core.ui.components
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.mmc.xingtuan.core.MMC2
 import dev.mmc.xingtuan.core.repository.DataRepository
 import org.slf4j.Logger
@@ -27,7 +27,7 @@ fun ColorCustomizeDialog(
 ) {
     var primaryColor by remember { mutableStateOf(Color(0xFF1976D2)) }
     var secondaryColor by remember { mutableStateOf(Color.White) }
-    var backgroundColor by remember { mutableStateOf(Color(0xFFF5F5F5)) }
+    var backgroundColor by remember { mutableStateOf(Color(0xFFF5F5F5)) }//
     var surfaceColor by remember { mutableStateOf(Color.White) }
     var customColorName by remember { mutableStateOf("") }
 
@@ -153,7 +153,7 @@ fun ColorCustomizeDialog(
                                     backgroundColor = secondaryColor
                                 )
                             ) {
-                                Text("选择", color = Color.Black)
+                                Text("选择", color = if ((secondaryColor.red * 0.299 + secondaryColor.green * 0.587 + secondaryColor.blue * 0.114) > 0.5f) Color.Black else Color.White)
                             }
                         }
 
@@ -213,6 +213,7 @@ fun ColorCustomizeDialog(
                 onClick = {
                     logger.info("Color customization confirmed")
                     // 应用颜色设置
+                    applyCustomTheme(primaryColor, secondaryColor, backgroundColor)
                     onDismiss()
                 },
                 colors = ButtonDefaults.buttonColors(

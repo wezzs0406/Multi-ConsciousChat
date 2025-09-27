@@ -45,7 +45,7 @@ fun SettingsDialog(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)  // 增加间距避免重叠
             ) {
                 // 基础设置
                 Card(

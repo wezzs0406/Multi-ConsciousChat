@@ -44,7 +44,8 @@ fun ConversationListPanel(
     onConversationSelect: (String) -> Unit,
     onSettingsClick: () -> Unit,
     onUpdateSystemConfig: () -> Unit,
-    onUpdateConversationConfig: () -> Unit
+    onUpdateConversationConfig: () -> Unit,
+    currentTheme: AppTheme
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showMemberSettings by remember { mutableStateOf(false) }
@@ -58,12 +59,12 @@ fun ConversationListPanel(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
             .background(
-                color = MaterialTheme.colors.surface.copy(alpha = 0.8f),
+                color = currentTheme.backgroundColor.copy(alpha = 0.8f),
                 shape = MaterialTheme.shapes.medium
             )
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colors.primary.copy(alpha = 0.3f),
+                color = currentTheme.primaryColor.copy(alpha = 0.3f),
                 shape = MaterialTheme.shapes.medium
             )
             .padding(16.dp)
@@ -122,10 +123,15 @@ fun ConversationListPanel(
             modifier = Modifier.padding(vertical = 8.dp),
             color = MaterialTheme.colors.primary.copy(alpha = 0.5f)
         )
-        conversationsState.forEach { conversation ->
+        Spacer(modifier = Modifier.height(4.dp))  // 在对话列表前添加间距
+        conversationsState.forEachIndexed { index, conversation ->
+            if (index > 0) {
+                Spacer(modifier = Modifier.height(8.dp))  // 对话项之间添加间距
+            }
             ConversationItem(
                 conversation = conversation,
                 isSelected = conversation.id == currentConversationIdState,
+                currentTheme = currentTheme,
                 onSelect = {
                     logger.info("ConversationItem onSelect called: id={}, name={}", conversation.id, conversation.name)
                     currentConversationIdState = conversation.id
@@ -184,7 +190,8 @@ fun ConversationListPanel(
                 onUpdateSystemConfig()
                 logger.info("onUpdateSystemConfig called")
                 showMemberSettings = false
-            }
+            },
+            currentTheme = GlobalTheme.value
         )
     }
 }
@@ -194,6 +201,7 @@ fun ConversationItem(
     conversation: Conversation,
     isSelected: Boolean,
     onSelect: () -> Unit,
+    currentTheme: AppTheme,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -201,9 +209,9 @@ fun ConversationItem(
             .fillMaxWidth()
             .clickable(onClick = onSelect),
         elevation = if (isSelected) 12.dp else 4.dp,
-        backgroundColor = if (isSelected) MaterialTheme.colors.primary.copy(alpha = 0.9f) else MaterialTheme.colors.surface,
+        backgroundColor = if (isSelected) currentTheme.primaryColor.copy(alpha = 0.9f) else MaterialTheme.colors.surface,
         shape = MaterialTheme.shapes.medium,
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colors.primary) else BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.2f))
+        border = if (isSelected) BorderStroke(2.dp, currentTheme.primaryColor) else BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.2f))
     ) {
         Row(
             modifier = Modifier
@@ -216,7 +224,7 @@ fun ConversationItem(
                 modifier = Modifier
                     .size(12.dp)
                     .background(
-                        color = if (isSelected) MaterialTheme.colors.onPrimary else MaterialTheme.colors.primary.copy(alpha = 0.5f),
+                        color = if (isSelected) currentTheme.secondaryColor else currentTheme.primaryColor.copy(alpha = 0.5f),
                         shape = CircleShape
                     )
                     .padding(end = 8.dp)
@@ -228,7 +236,7 @@ fun ConversationItem(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                     fontSize = 16.sp
                 ),
-                color = if (isSelected) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onSurface,
+                color = if (isSelected) currentTheme.secondaryColor else MaterialTheme.colors.onSurface,
                 modifier = Modifier.weight(1f)
             )
 
@@ -237,7 +245,7 @@ fun ConversationItem(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "当前选中",
-                    tint = MaterialTheme.colors.onPrimary,
+                    tint = currentTheme.secondaryColor,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -348,7 +356,8 @@ fun MemberSettingsDialog(
     members: List<Consciousness>,
     onDismiss: () -> Unit,
     onMemberSelected: (String) -> Unit,
-    onMemberCreated: (name: String, tags: String) -> Unit
+    onMemberCreated: (name: String, tags: String) -> Unit,
+    currentTheme: AppTheme
 ) {
     var name by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
@@ -394,7 +403,7 @@ fun MemberSettingsDialog(
                         elevation = 4.dp,
                         shape = MaterialTheme.shapes.medium,
                         backgroundColor = if (member.id == MemberManager.currentMemberId)
-                            MaterialTheme.colors.primary.copy(alpha = 0.9f)
+                            currentTheme.primaryColor.copy(alpha = 0.9f)
                         else
                             MaterialTheme.colors.surface.copy(alpha = 0.9f)
                     ) {
@@ -416,7 +425,7 @@ fun MemberSettingsDialog(
                                     ),
                                     modifier = Modifier.weight(1f),
                                     color = if (member.id == MemberManager.currentMemberId)
-                                        MaterialTheme.colors.onPrimary
+                                        currentTheme.secondaryColor
                                     else
                                         MaterialTheme.colors.onSurface
                                 )
@@ -426,7 +435,7 @@ fun MemberSettingsDialog(
                                     Box(
                                         modifier = Modifier
                                             .background(
-                                                color = MaterialTheme.colors.onPrimary.copy(alpha = 0.2f),
+                                                color = currentTheme.secondaryColor.copy(alpha = 0.2f),
                                                 shape = MaterialTheme.shapes.small
                                             )
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -434,7 +443,7 @@ fun MemberSettingsDialog(
                                         Text(
                                             text = "当前",
                                             style = MaterialTheme.typography.caption,
-                                            color = MaterialTheme.colors.onPrimary,
+                                            color = currentTheme.secondaryColor,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
@@ -446,7 +455,7 @@ fun MemberSettingsDialog(
                                     text = member.personalityTags.joinToString(", "),
                                     style = MaterialTheme.typography.caption,
                                     color = if (member.id == MemberManager.currentMemberId)
-                                        MaterialTheme.colors.onPrimary.copy(alpha = 0.8f)
+                                        currentTheme.secondaryColor.copy(alpha = 0.8f)
                                     else
                                         MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
                                     modifier = Modifier.padding(top = 8.dp)
@@ -627,6 +636,15 @@ fun MultiAppScreen(dataRepository: DataRepository) {
         dataRepository.saveAll()
     }
 
+    // 监听主题变化并触发UI更新
+    LaunchedEffect(GlobalTheme.value) {
+        // 主题变化时触发整个UI重组
+        // 这里不需要更新特定状态，只需要触发重组
+    }
+
+    // 获取当前主题的函数
+    fun getCurrentAppTheme(): AppTheme = GlobalTheme.value
+
     var showSettingsDialog by remember { mutableStateOf(false) }
     var showPersonalizeDialog by remember { mutableStateOf(false) }
     var showColorCustomizeDialog by remember { mutableStateOf(false) }
@@ -650,6 +668,7 @@ fun MultiAppScreen(dataRepository: DataRepository) {
         ConversationListPanel(
             conversations = conversationConfig.conversationsList,
             currentConversationId = conversationConfig.currentConversationId,
+            currentTheme = getCurrentAppTheme(),
             onConversationSelect = { id: String ->
                 // 更新当前对话
                 logger.info("Selecting conversation with id: {}", id)
@@ -686,6 +705,7 @@ fun MultiAppScreen(dataRepository: DataRepository) {
         ConversationPanel(
             systemConfig = systemConfig,
             currentConversationId = conversationConfig.currentConversationId,
+            currentTheme = getCurrentAppTheme(),
             conversationsList = conversationConfig.conversationsList,
             onMessageSend = { message ->
                 logger.info("Sending message: {}", message)

@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-// 导入TopAppBar中的主题定义
+// 导入TopAppBar中的主题定义和函数
 private val logger: Logger = LoggerFactory.getLogger("PersonalizeDialog")
 
 
