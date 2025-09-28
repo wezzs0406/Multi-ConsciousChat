@@ -82,3 +82,103 @@
 00:47:48.854 [AWT-EventQueue-0] INFO  MultiAppScreen - Updating UI state...
 00:47:48.854 [AWT-EventQueue-0] INFO  MultiAppScreen - Updated UI state, conversationConfig conversationsList size: 2
 00:47:48.854 [AWT-EventQueue-0] INFO  MultiAppScreen - UI state - First conversation messages count: 1
+21:52:14.715 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings dismissed
+21:56:20.299 [AWT-EventQueue-0] INFO  AboutDialog - Website clicked: https://github.com/mmc2/multi-conscious-chat
+22:04:45.818 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:12:58.185 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:15:22.183 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:19:44.911 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:20:02.599 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:20:22.285 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:20:38.708 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:20:49.658 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:20:56.593 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:21:27.417 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:21:40.649 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:22:51.365 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:24:37.344 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:31:10.878 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:31:51.899 [AWT-EventQueue-0] INFO  AboutDialog - About dialog confirmed
+22:34:51.381 [AWT-EventQueue-0] INFO  MultiAppScreen - Search clicked
+22:34:52.641 [AWT-EventQueue-0] INFO  MultiAppScreen - Search clicked
+22:34:54.357 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:34:55.457 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:34:58.531 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:34:59.392 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:35:01.620 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 深邃夜
+22:35:02.366 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:35:06.231 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:35:07.058 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:35:09.539 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:35:10.270 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:40:51.464 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:40:54.900 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:40:57.141 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:40:58.262 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:41:00.179 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:01.872 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:02.781 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:03.326 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:03.737 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:04.180 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 深邃夜
+22:41:04.693 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:05.209 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:05.735 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:06.226 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:06.949 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:08.129 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:08.521 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:08.904 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:09.296 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:09.759 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:10.212 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 深邃夜
+22:41:10.581 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:11.041 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:11.540 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:13.513 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:14.505 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:15.204 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:15.923 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:16.306 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:16.682 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 深邃夜
+22:41:19.245 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:19.935 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:25.563 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:25.918 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:26.427 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:26.905 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:27.401 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 深邃夜
+22:41:28.512 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:32.082 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:32.603 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:32.981 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:33.478 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 米白
+22:41:34.046 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:34.671 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 自然绿
+22:41:35.146 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:35.547 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 深邃夜
+22:41:36.922 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:41:38.829 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温柔紫
+22:41:41.067 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:41:42.223 [AWT-EventQueue-0] INFO  MultiAppScreen - ConversationItem onSelect called: id=75408288-eb1e-48fd-9622-7f5ab02ebb21, name=12
+22:41:42.224 [AWT-EventQueue-0] INFO  MultiAppScreen - Selecting conversation with id: 75408288-eb1e-48fd-9622-7f5ab02ebb21
+22:41:42.701 [AWT-EventQueue-0] INFO  MultiAppScreen - ConversationItem onSelect called: id=a0b48893-b6af-4e39-89d2-e4cbf725aa8e, name=12312
+22:41:42.702 [AWT-EventQueue-0] INFO  MultiAppScreen - Selecting conversation with id: a0b48893-b6af-4e39-89d2-e4cbf725aa8e
+22:41:43.001 [AWT-EventQueue-0] INFO  MultiAppScreen - ConversationItem onSelect called: id=75408288-eb1e-48fd-9622-7f5ab02ebb21, name=12
+22:41:43.001 [AWT-EventQueue-0] INFO  MultiAppScreen - Selecting conversation with id: 75408288-eb1e-48fd-9622-7f5ab02ebb21
+22:41:43.353 [AWT-EventQueue-0] INFO  MultiAppScreen - ConversationItem onSelect called: id=a0b48893-b6af-4e39-89d2-e4cbf725aa8e, name=12312
+22:41:43.353 [AWT-EventQueue-0] INFO  MultiAppScreen - Selecting conversation with id: a0b48893-b6af-4e39-89d2-e4cbf725aa8e
+22:41:48.283 [AWT-EventQueue-0] INFO  PersonalizeDialog - Theme selected: 温暖橙
+22:41:49.168 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings confirmed
+22:41:50.018 [AWT-EventQueue-0] INFO  MultiAppScreen - ConversationItem onSelect called: id=75408288-eb1e-48fd-9622-7f5ab02ebb21, name=12
+22:41:50.018 [AWT-EventQueue-0] INFO  MultiAppScreen - Selecting conversation with id: 75408288-eb1e-48fd-9622-7f5ab02ebb21
+22:41:50.323 [AWT-EventQueue-0] INFO  MultiAppScreen - ConversationItem onSelect called: id=a0b48893-b6af-4e39-89d2-e4cbf725aa8e, name=12312
+22:41:50.323 [AWT-EventQueue-0] INFO  MultiAppScreen - Selecting conversation with id: a0b48893-b6af-4e39-89d2-e4cbf725aa8e
+22:41:56.392 [AWT-EventQueue-0] INFO  SettingsDialog - Settings dismissed
+22:42:31.104 [AWT-EventQueue-0] INFO  SettingsDialog - Settings dismissed
+22:42:41.266 [AWT-EventQueue-0] INFO  PersonalizeDialog - Personalize settings dismissed
+22:42:51.274 [AWT-EventQueue-0] INFO  SettingsDialog - Check for updates button clicked
+22:42:52.029 [AWT-EventQueue-0] INFO  SettingsDialog - Export logs button clicked
+22:42:53.996 [AWT-EventQueue-0] INFO  SettingsDialog - Settings dismissed
+22:42:57.909 [AWT-EventQueue-0] INFO  ImportDialog - Import dialog dismissed
+22:43:06.949 [AWT-EventQueue-0] INFO  ExportDialog - Export started - path: C:\Users\27385/mmc2_export.json

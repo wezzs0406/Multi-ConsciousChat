@@ -1,64 +1,92 @@
 package dev.mmc.xingtuan.core.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import dev.mmc.xingtuan.core.MMC2
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-private val logger: Logger = LoggerFactory.getLogger("AboutDialog")
 
 @Composable
 fun AboutDialog(
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "关于 MMC2",
-                style = MaterialTheme.typography.h5.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colors.onSurface
-            )
-        },
-        text = {
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colors.surface,
+            modifier = Modifier
+                .widthIn(min = 300.dp, max = 500.dp)
+                .heightIn(max = 600.dp)
+        ) {
             Column(
                 modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 标题和关闭按钮
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "关于 MMC2",
+                        style = MaterialTheme.typography.h5.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colors.onSurface
+                    )
+                    IconButton(
+                        onClick = onDismiss
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "关闭",
+                            tint = MaterialTheme.colors.onSurface
+                        )
+                    }
+                }
+
                 // 应用图标
                 Card(
                     modifier = Modifier.size(80.dp),
-                    backgroundColor = MaterialTheme.colors.primary,
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    backgroundColor = Color(0xFFF2F2F2),
+                    //backgroundColor = MaterialTheme.colors.primary
+
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "MMC2",
-                            style = MaterialTheme.typography.h6.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 24.sp
-                            ),
-                            color = MaterialTheme.colors.onPrimary,
-                            textAlign = TextAlign.Center
+                        Image(
+                            painter = painterResource("img/MMC2.png"),
+                            contentDescription = "应用图标",
+                            modifier = Modifier
+                                .size(88.dp)
                         )
                     }
                 }
@@ -67,7 +95,8 @@ fun AboutDialog(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = MaterialTheme.colors.surface,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 1.dp
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -84,7 +113,7 @@ fun AboutDialog(
                                 color = MaterialTheme.colors.onSurface
                             )
                             Text(
-                                text = MMC2.NAME,
+                                text = MMC2.FULL_NAME,
                                 style = MaterialTheme.typography.body1,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colors.onSurface
@@ -135,7 +164,8 @@ fun AboutDialog(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = MaterialTheme.colors.surface,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 1.dp
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -164,37 +194,7 @@ fun AboutDialog(
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
-                // 网站
-                TextButton(
-                    onClick = {
-                        logger.info("Website clicked: {}", MMC2.WEBSITE)
-                        // 这里可以打开网站链接
-                    }
-                ) {
-                    Text(
-                        text = MMC2.WEBSITE,
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.primary
-                    )
-                }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    logger.info("About dialog confirmed")
-                    onDismiss()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.primary,
-                    contentColor = MaterialTheme.colors.onPrimary
-                )
-            ) {
-                Text("确定")
-            }
-        },
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = MaterialTheme.colors.surface,
-        modifier = Modifier.fillMaxWidth(0.9f)
-    )
+        }
+    }
 }

@@ -7,17 +7,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 // 导入TopAppBar中的主题定义和函数
 private val logger: Logger = LoggerFactory.getLogger("PersonalizeDialog")
-
 
 @Composable
 fun PersonalizeDialog(
@@ -30,29 +33,57 @@ fun PersonalizeDialog(
     var enableNotifications by remember { mutableStateOf(true) }
     var enableSoundEffects by remember { mutableStateOf(false) }
 
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "个性化设置",
-                style = MaterialTheme.typography.h5.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colors.onSurface
-            )
-        },
-        text = {
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colors.surface,
+            modifier = Modifier
+                .widthIn(min = 300.dp, max = 500.dp)
+                .heightIn(max = 700.dp)
+        ) {
             Column(
                 modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.Start
             ) {
+                // 标题和关闭按钮
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "个性化设置",
+                        style = MaterialTheme.typography.h5.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colors.onSurface
+                    )
+                    IconButton(
+                        onClick = onDismiss
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "关闭",
+                            tint = MaterialTheme.colors.onSurface
+                        )
+                    }
+                }
+
                 // 主题选择
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = MaterialTheme.colors.surface,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 1.dp
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -140,7 +171,8 @@ fun PersonalizeDialog(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = MaterialTheme.colors.surface,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 1.dp
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -209,7 +241,8 @@ fun PersonalizeDialog(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = MaterialTheme.colors.surface,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 1.dp
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -266,41 +299,45 @@ fun PersonalizeDialog(
                         }
                     }
                 }
+
+                // 按钮区域
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = {
+                            logger.info("Personalize settings dismissed")
+                            onDismiss()
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colors.onSurface
+                        )
+                    ) {
+                        Text("取消")
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(
+                        onClick = {
+                            logger.info("Personalize settings confirmed")
+                            // 应用主题
+                            setTheme(selectedThemeIndex)
+                            // 保存主题偏好
+                            saveThemePreference(selectedThemeIndex)
+                            onDismiss()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = themes[selectedThemeIndex].primaryColor,
+                            contentColor = themes[selectedThemeIndex].secondaryColor
+                        )
+                    ) {
+                        Text("应用")
+                    }
+                }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    logger.info("Personalize settings confirmed")
-                    // 应用主题
-                    setTheme(selectedThemeIndex)
-                    // 保存主题偏好
-                    saveThemePreference(selectedThemeIndex)
-                    onDismiss()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = themes[selectedThemeIndex].primaryColor,
-                    contentColor = themes[selectedThemeIndex].secondaryColor
-                )
-            ) {
-                Text("应用")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    logger.info("Personalize settings dismissed")
-                    onDismiss()
-                },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colors.onSurface
-                )
-            ) {
-                Text("取消")
-            }
-        },
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = MaterialTheme.colors.surface,
-        modifier = Modifier.fillMaxWidth(0.9f)
-    )
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package dev.mmc.xingtuan.core;
 
 public class MMC2 {
-    public static final String NAME = "MMC2 多意识体聊天应用";
+    public static final String NAME = "MMC2";
     public static final String VERSION = "2.0-new";
     public static final String FULL_NAME = "Multi-ConsciousChat 2";
     public static final String Writer1 = "xingtuan";
