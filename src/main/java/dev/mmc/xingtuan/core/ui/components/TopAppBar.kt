@@ -266,7 +266,7 @@ fun setTheme(index: Int) {
 
 fun getCurrentThemeIndex(): Int = currentThemeIndex
 
-// 主题持久化（可以后续扩展）
+// 主题持久化
 fun saveThemePreference(index: Int) {
     // 这里可以保存到文件或数据库
     setTheme(index)

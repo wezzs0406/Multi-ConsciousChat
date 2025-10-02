@@ -259,7 +259,16 @@ fun SettingsDialog(
             Button(
                 onClick = {
                     logger.info("Settings confirmed - saving preferences")
-                    // 这里可以保存设置到数据仓库
+                    // 保存设置到数据仓库
+                    dataRepository.saveAppSettings(
+                        enableAnimations = true,
+                        enableNotifications = true,
+                        enableSoundEffects = false,
+                        fontSize = fontSize,
+                        messageHistoryLimit = messageHistoryLimit,
+                        autoSaveEnabled = autoSaveEnabled
+                    )
+                    logger.info("Settings saved: fontSize={}, historyLimit={}, autoSave={}", fontSize, messageHistoryLimit, autoSaveEnabled)
                     onDismiss()
                 },
                 colors = ButtonDefaults.buttonColors(

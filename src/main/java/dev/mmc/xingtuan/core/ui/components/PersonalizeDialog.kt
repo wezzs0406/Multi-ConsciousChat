@@ -25,13 +25,14 @@ private val logger: Logger = LoggerFactory.getLogger("PersonalizeDialog")
 @Composable
 fun PersonalizeDialog(
     onDismiss: () -> Unit,
-    dataRepository: dev.mmc.xingtuan.core.repository.DataRepository
+    dataRepository: dev.mmc.xingtuan.core.repository.DataRepository,
+    systemConfig: dev.mmc.xingtuan.core.ui.SystemConfig,
+    notificationService: dev.mmc.xingtuan.core.service.NotificationService,
+    onSystemConfigUpdated: (dev.mmc.xingtuan.core.ui.SystemConfig) -> Unit
 ) {
     var selectedThemeIndex by remember { mutableStateOf(getCurrentThemeIndex()) }
-    var customName by remember { mutableStateOf("") }
-    var enableAnimations by remember { mutableStateOf(true) }
-    var enableNotifications by remember { mutableStateOf(true) }
-    var enableSoundEffects by remember { mutableStateOf(false) }
+    var enableAnimations by remember { mutableStateOf(systemConfig.enableAnimations) }
+    var enableNotifications by remember { mutableStateOf(systemConfig.enableNotifications) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -150,20 +151,6 @@ fun PersonalizeDialog(
                                 }
                             }
                         }
-
-                        Divider(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
-                        )
-
-                        // 主题名称输入
-                        OutlinedTextField(
-                            value = customName,
-                            onValueChange = { customName = it },
-                            label = { Text("自定义名称") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
                     }
                 }
 
@@ -184,9 +171,9 @@ fun PersonalizeDialog(
                             color = MaterialTheme.colors.onSurface
                         )
 
-                        // 动画效果
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -214,24 +201,10 @@ fun PersonalizeDialog(
                             )
                             Switch(
                                 checked = enableNotifications,
-                                onCheckedChange = { enableNotifications = it }
-                            )
-                        }
-
-                        // 音效
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "启用音效",
-                                style = MaterialTheme.typography.body1,
-                                color = MaterialTheme.colors.onSurface
-                            )
-                            Switch(
-                                checked = enableSoundEffects,
-                                onCheckedChange = { enableSoundEffects = it }
+                                onCheckedChange = {
+                                    enableNotifications = it
+                                    logger.info("Notifications enabled: {}", it)
+                                }
                             )
                         }
                     }
@@ -326,7 +299,30 @@ fun PersonalizeDialog(
                             // 应用主题
                             setTheme(selectedThemeIndex)
                             // 保存主题偏好
-                            saveThemePreference(selectedThemeIndex)
+                            dataRepository.saveThemePreference(selectedThemeIndex)
+                            
+                            // 创建新的系统配置
+                            val newSystemConfig = systemConfig.copy(
+                                enableAnimations = enableAnimations,
+                                enableNotifications = enableNotifications
+                            )
+                            
+                            // 保存应用设置
+                            dataRepository.saveAppSettings(
+                                enableAnimations = enableAnimations,
+                                enableNotifications = enableNotifications,
+                                enableSoundEffects = false,
+                                fontSize = 16,
+                                messageHistoryLimit = 1000,
+                                autoSaveEnabled = true
+                            )
+                            // 更新通知服务状态
+                            notificationService.setNotificationEnabled(enableNotifications)
+                            
+                            // 通知调用者系统配置已更新
+                            onSystemConfigUpdated(newSystemConfig)
+                            
+                            logger.info("App settings saved: animations={}, notifications={}", enableAnimations, enableNotifications)
                             onDismiss()
                         },
                         colors = ButtonDefaults.buttonColors(

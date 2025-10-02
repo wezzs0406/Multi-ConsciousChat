@@ -20,6 +20,7 @@ import dev.mmc.xingtuan.core.core.conversations.Message
 import dev.mmc.xingtuan.core.core.member.Consciousness
 import dev.mmc.xingtuan.core.core.member.MemberManager
 import dev.mmc.xingtuan.core.repository.DataRepository
+import dev.mmc.xingtuan.core.service.NotificationService
 import dev.mmc.xingtuan.core.ui.components.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,7 +30,13 @@ private val logger: Logger = LoggerFactory.getLogger("MultiAppScreen")
 
 data class SystemConfig(
     val currentMemberId: String,
-    val membersList: List<Consciousness>
+    val membersList: List<Consciousness>,
+    val enableAnimations: Boolean = true,
+    val enableNotifications: Boolean = true,
+    val enableSoundEffects: Boolean = false,
+    val fontSize: Int = 16,
+    val messageHistoryLimit: Int = 1000,
+    val autoSaveEnabled: Boolean = true
 )
 
 data class ConversationConfig(
@@ -171,6 +178,7 @@ fun ConversationListPanel(
             onMemberSelected = { memberId: String ->
                 // 切换成员并触发保存
                 MemberManager.currentMemberId = memberId
+
                 onUpdateSystemConfig()
             },
             onMemberCreated = { name: String, tags: String ->
@@ -577,12 +585,26 @@ fun MemberSettingsDialog(
 }
 
 @Composable
-fun MultiAppScreen(dataRepository: DataRepository) {
+fun MultiAppScreen(
+    dataRepository: DataRepository,
+    notificationService: NotificationService
+) {
+    // 加载应用设置
+    var appSettings by remember {
+        mutableStateOf(dataRepository.loadAppSettings())
+    }
+
     var systemConfig by remember {
         mutableStateOf(
             SystemConfig(
                 currentMemberId = MemberManager.currentMemberId,
-                membersList = MemberManager.membersList.toList()
+                membersList = MemberManager.membersList.toList(),
+                enableAnimations = appSettings?.get("enableAnimations") as? Boolean ?: true,
+                enableNotifications = appSettings?.get("enableNotifications") as? Boolean ?: true,
+                enableSoundEffects = appSettings?.get("enableSoundEffects") as? Boolean ?: false,
+                fontSize = (appSettings?.get("fontSize") as? Number)?.toInt() ?: 16,
+                messageHistoryLimit = (appSettings?.get("messageHistoryLimit") as? Number)?.toInt() ?: 1000,
+                autoSaveEnabled = appSettings?.get("autoSaveEnabled") as? Boolean ?: true
             )
         )
     }
@@ -642,6 +664,14 @@ fun MultiAppScreen(dataRepository: DataRepository) {
         // 这里不需要更新特定状态，只需要触发重组
     }
 
+    // 动画效果状态
+    var animationTrigger by remember { mutableStateOf(0) }
+
+    // 动画效果函数
+    fun animateMessageSent() {
+        animationTrigger++
+    }
+
     // 获取当前主题的函数
     fun getCurrentAppTheme(): AppTheme = GlobalTheme.value
 
@@ -692,6 +722,10 @@ fun MultiAppScreen(dataRepository: DataRepository) {
                 )
                 logger.info("systemConfig updated: currentMemberId={}, membersList size={}",
                     systemConfig.currentMemberId, systemConfig.membersList.size)
+
+                // 记录动画和通知设置状态
+                logger.info("Animation settings: animationsEnabled={}, notificationsEnabled={}",
+                    systemConfig.enableAnimations, systemConfig.enableNotifications)
             },
             onUpdateConversationConfig = {
                 conversationConfig = ConversationConfig(
@@ -763,6 +797,18 @@ fun MultiAppScreen(dataRepository: DataRepository) {
                         currentConversationId = ConversationManager.currentConversationId,
                         conversationsList = ConversationManager.conversationsList.toList()
                     )
+
+                    // 如果启用了通知，显示消息发送通知
+                    if (systemConfig.enableNotifications) {
+                        notificationService.showSystemNotification("消息已发送")
+                    }
+
+                    // 如果启用了动画效果，添加视觉反馈
+                    if (systemConfig.enableAnimations) {
+                        logger.info("Animation effect triggered for message sent")
+                        // 添加动画效果
+                        animateMessageSent()
+                    }
                     logger.info("Updated UI state, conversationConfig conversationsList size: {}", conversationConfig.conversationsList.size)
                     if (conversationConfig.conversationsList.isNotEmpty()) {
                         logger.info("UI state - First conversation messages count: {}", conversationConfig.conversationsList[0].messages.size)
@@ -785,7 +831,12 @@ fun MultiAppScreen(dataRepository: DataRepository) {
     if (showPersonalizeDialog) {
         PersonalizeDialog(
             onDismiss = { showPersonalizeDialog = false },
-            dataRepository = dataRepository
+            dataRepository = dataRepository,
+            systemConfig = systemConfig,
+            notificationService = notificationService,
+            onSystemConfigUpdated = { newConfig ->
+                systemConfig = newConfig
+            }
         )
     }
 

@@ -1,9 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.gradlew build)",
-      "Bash(gradle build)",
-      "Bash(./gradlew.bat build)"
+      "Bash(git checkout -- src/main/java/dev/mmc/xingtuan/core/ui/components/ConversationPanel.kt)",
+      "Bash(./gradlew.bat run)"
     ],
     "deny": [],
     "ask": []

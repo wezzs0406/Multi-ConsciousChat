@@ -10,10 +10,13 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.databind.SerializationFeature
 import java.io.File
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DataRepository {
     private val objectMapper: ObjectMapper
     private val mMC2Dir: File
+    private val logger: Logger = LoggerFactory.getLogger("DataRepository")
 
     init {
         // 创建MMC2数据目录
@@ -221,5 +224,66 @@ class DataRepository {
         // 删除对话的消息文件夹
         val messagesDir = File(File(mMC2Dir, "messages"), conversationId)
         messagesDir.deleteRecursively()
+    }
+
+    // ==================== 应用设置管理 ====================
+    fun saveAppSettings(
+        enableAnimations: Boolean,
+        enableNotifications: Boolean,
+        enableSoundEffects: Boolean,
+        fontSize: Int,
+        messageHistoryLimit: Int,
+        autoSaveEnabled: Boolean
+    ) {
+        val settingsFile = File(mMC2Dir, "app_settings.json")
+        val settings = mapOf(
+            "enableAnimations" to enableAnimations,
+            "enableNotifications" to enableNotifications,
+            "enableSoundEffects" to enableSoundEffects,
+            "fontSize" to fontSize,
+            "messageHistoryLimit" to messageHistoryLimit,
+            "autoSaveEnabled" to autoSaveEnabled
+        )
+        settingsFile.writeText(objectMapper.writeValueAsString(settings))
+    }
+
+    fun loadAppSettings(): Map<String, Any>? {
+        val settingsFile = File(mMC2Dir, "app_settings.json")
+        if (!settingsFile.exists()) return null
+
+        return try {
+            objectMapper.readValue(settingsFile.readText(), Map::class.java) as? Map<String, Any>
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // ==================== 主题设置管理 ====================
+    fun saveThemePreference(themeIndex: Int) {
+        val themeFile = File(mMC2Dir, "theme_settings.json")
+        val themeSettings = mapOf(
+            "selectedThemeIndex" to themeIndex
+        )
+        themeFile.writeText(objectMapper.writeValueAsString(themeSettings))
+        logger.info("Theme preference saved: index = {}", themeIndex)
+    }
+
+    fun loadThemePreference(): Int? {
+        val themeFile = File(mMC2Dir, "theme_settings.json")
+        if (!themeFile.exists()) {
+            logger.info("No theme preference file found, using default")
+            return null
+        }
+
+        return try {
+            val settings = objectMapper.readValue(themeFile.readText(), Map::class.java) as? Map<String, Any>
+            val index = settings?.get("selectedThemeIndex") as? Int
+            logger.info("Theme preference loaded: index = {}", index)
+            index
+        } catch (e: Exception) {
+            logger.error("Failed to load theme preference", e)
+            null
+        }
     }
 }
