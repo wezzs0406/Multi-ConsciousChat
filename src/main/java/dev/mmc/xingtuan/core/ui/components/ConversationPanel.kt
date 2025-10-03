@@ -17,8 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
 import dev.mmc.xingtuan.core.core.conversations.Conversation
 import dev.mmc.xingtuan.core.core.conversations.Message
 import dev.mmc.xingtuan.core.ui.SystemConfig
@@ -145,6 +143,7 @@ fun ConversationPanel(
 fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppTheme) {
     // 判断是否为米白主题
     val isRiceWhiteTheme = currentTheme.name == "米白"
+    val isGreenTheme = currentTheme.name == "自然绿"
 
     val backgroundColor = if (isCurrentMember) {
         currentTheme.primaryColor  // 当前成员使用主题主色
@@ -153,7 +152,7 @@ fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppThe
         if (isRiceWhiteTheme) {
             Color(0xFFF0F0F0) // 米白主题下的浅灰色
         } else {
-            currentTheme.secondaryColor.copy(alpha = 0.08f)  // 其他主题下使用半透明次要色
+            currentTheme.secondaryColor.copy(alpha = 0.10f)  // 其他主题下使用半透明次要色
         }
     }
 
@@ -162,11 +161,14 @@ fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppThe
     // 统一的文字颜色判断逻辑，米白主题下强制使用黑色
     val textColor = if (isRiceWhiteTheme) {
         Color(0xFF000000) // 米白主题下使用纯黑色
-    } else {
+    } else if (isGreenTheme) {
+        Color(0xFF579728) // 绿色主题下使用深绿色
+    }
+    else {
         if (isCurrentMember) {
             currentTheme.secondaryColor  // 当前成员用主题文字色（对比色）
         } else {
-            currentTheme.primaryColor  // 其他成员用主题主色
+            darkenColor(currentTheme.primaryColor)// 其他成员用主题主色
         }
     }
 

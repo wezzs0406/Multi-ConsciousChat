@@ -15,16 +15,6 @@ public class MMC2 {
     public static final String CONFIG_FILE = "system.yaml";
     public static final String APP_DATA_DIR = System.getProperty("user.home") + "/.mmc2";
 
-    // 应用配置
-    public static final class Config {
-        public static final boolean AUTO_SAVE = true;
-        public static final int AUTO_SAVE_INTERVAL = 30000; // 30秒
-        public static final boolean ENABLE_LOGGING = true;
-        public static final int MAX_LOG_SIZE = 10485760; // 10MB
-        public static final int MAX_CONVERSATION_MESSAGES = 1000;
-        public static final int MAX_MEMBERS = 50;
-    }
-
     // 主题配置
     public static final class Theme {
         public static final String DEFAULT_THEME = "默认蓝";

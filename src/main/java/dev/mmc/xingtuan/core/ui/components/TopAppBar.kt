@@ -225,26 +225,26 @@ var themes = mutableListOf(
             ),
     AppTheme(
         name = "温柔紫",
-        primaryColor = Color(0xFF9C27B0),
-        secondaryColor = Color.White,
+        primaryColor = Color(0xffccade3),
+        secondaryColor = Color(0xFF101010),
         backgroundColor = Color(0xFFF9F4FF)
             ),
     AppTheme(
         name = "自然绿",
-        primaryColor = Color(0xFF4CAF50),
-        secondaryColor = Color.White,
+        primaryColor = Color(0xffc4e3ad),
+        secondaryColor = Color(0xFF101010),
         backgroundColor = Color(0xFFF1F8E9)
             ),
     AppTheme(
         name = "温暖橙",
-        primaryColor = Color(0xFFFF9800),
+        primaryColor = Color(0xFFE8B26B),
         secondaryColor = Color.White,
         backgroundColor = Color(0xFFFFF3E0)
             ),
     AppTheme(
         name = "深邃夜",
-        primaryColor = Color(0xFF121212),
-        secondaryColor = Color(0xFFE0E0E0),
+        primaryColor = Color(0xffefa1b6),
+        secondaryColor = Color(0xFFFFFFFF),
         backgroundColor = Color(0xFFEEEDED)
     )
 )
