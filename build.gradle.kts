@@ -31,6 +31,9 @@ dependencies {
     // Logging framework
     implementation("ch.qos.logback:logback-classic:1.5.13")
     implementation("org.slf4j:slf4j-api:2.0.9")
+    
+    // File chooser for Compose Desktop
+    implementation("com.darkrockstudios:mpfilepicker:3.1.0")
 }
 
 tasks.test {

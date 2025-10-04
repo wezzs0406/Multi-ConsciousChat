@@ -1,8 +1,15 @@
 package dev.mmc.xingtuan.core.ui
 
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -19,6 +26,7 @@ import dev.mmc.xingtuan.core.core.conversations.ConversationManager
 import dev.mmc.xingtuan.core.core.conversations.Message
 import dev.mmc.xingtuan.core.core.member.Consciousness
 import dev.mmc.xingtuan.core.core.member.MemberManager
+import dev.mmc.xingtuan.core.ui.components.GlobalTheme
 import dev.mmc.xingtuan.core.repository.DataRepository
 import dev.mmc.xingtuan.core.service.NotificationService
 import dev.mmc.xingtuan.core.ui.components.*
@@ -26,8 +34,22 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
+/**
+ * 日志记录器，用于记录MultiAppScreen中的操作和事件
+ */
 private val logger: Logger = LoggerFactory.getLogger("MultiAppScreen")
 
+/**
+ * 系统配置数据类，包含应用的全局设置
+ * 
+ * @param currentMemberId 当前选中的成员ID
+ * @param membersList 所有成员列表
+ * @param enableAnimations 是否启用动画效果
+ * @param enableNotifications 是否启用通知
+ * @param enableSoundEffects 是否启用音效
+ * @param fontSize 字体大小
+ * @param autoSaveEnabled 是否启用自动保存
+ */
 data class SystemConfig(
     val currentMemberId: String,
     val membersList: List<Consciousness>,
@@ -35,15 +57,32 @@ data class SystemConfig(
     val enableNotifications: Boolean = true,
     val enableSoundEffects: Boolean = false,
     val fontSize: Int = 16,
-    val messageHistoryLimit: Int = 1000,
     val autoSaveEnabled: Boolean = true
 )
 
+/**
+ * 对话配置数据类，包含对话相关的状态
+ * 
+ * @param currentConversationId 当前选中的对话ID
+ * @param conversationsList 所有对话列表
+ */
 data class ConversationConfig(
     val currentConversationId: String,
     val conversationsList: List<Conversation>
 )
 
+/**
+ * 对话列表面板组件，显示所有对话并提供管理功能
+ * 
+ * @param conversations 对话列表
+ * @param currentConversationId 当前选中的对话ID
+ * @param onConversationSelect 选择对话的回调函数
+ * @param onSettingsClick 设置按钮点击的回调函数
+ * @param onUpdateSystemConfig 更新系统配置的回调函数
+ * @param onUpdateConversationConfig 更新对话配置的回调函数
+ * @param currentTheme 当前主题
+ * @param systemConfig 系统配置
+ */
 @Composable
 fun ConversationListPanel(
     conversations: List<Conversation>,
@@ -52,12 +91,15 @@ fun ConversationListPanel(
     onSettingsClick: () -> Unit,
     onUpdateSystemConfig: () -> Unit,
     onUpdateConversationConfig: () -> Unit,
-    currentTheme: AppTheme
+    currentTheme: AppTheme,
+    systemConfig: SystemConfig
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showMemberSettings by remember { mutableStateOf(false) }
     var conversationsState by remember { mutableStateOf(conversations) }
     var currentConversationIdState by remember { mutableStateOf(currentConversationId) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var conversationToRename by remember { mutableStateOf<Conversation?>(null) }
 
     Column(
         modifier = Modifier
@@ -85,8 +127,9 @@ fun ConversationListPanel(
                 "对话列表",
                 style = MaterialTheme.typography.h5.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
+                    fontSize = (systemConfig.fontSize * 1.125).sp  // 18sp = 16sp * 1.125
+                ),
+                color = currentTheme.onBackgroundColor
             )
             Row {
                 IconButton(
@@ -94,8 +137,8 @@ fun ConversationListPanel(
                     modifier = Modifier
                         .size(40.dp)
                         .background(
-                            color = if (showMemberSettings) MaterialTheme.colors.primary.copy(alpha = 0.2f)
-                                   else MaterialTheme.colors.surface,
+                            color = if (showMemberSettings) currentTheme.primaryColor.copy(alpha = 0.2f)
+                                   else currentTheme.primaryColor.copy(alpha = 0.1f),
                             shape = MaterialTheme.shapes.small
                         )
                         .padding(4.dp)
@@ -103,7 +146,7 @@ fun ConversationListPanel(
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = "成员设置",
-                        tint = MaterialTheme.colors.primary
+                        tint = currentTheme.primaryColor
                     )
                 }
                 IconButton(
@@ -111,8 +154,8 @@ fun ConversationListPanel(
                     modifier = Modifier
                         .size(40.dp)
                         .background(
-                            color = if (showCreateDialog) MaterialTheme.colors.primary.copy(alpha = 0.2f)
-                                   else MaterialTheme.colors.surface,
+                            color = if (showCreateDialog) currentTheme.primaryColor.copy(alpha = 0.2f)
+                                   else currentTheme.primaryColor.copy(alpha = 0.1f),
                             shape = MaterialTheme.shapes.small
                         )
                         .padding(4.dp)
@@ -120,7 +163,7 @@ fun ConversationListPanel(
                     Icon(
                         Icons.Default.Add,
                         contentDescription = "添加对话",
-                        tint = MaterialTheme.colors.primary
+                        tint = currentTheme.primaryColor
                     )
                 }
             }
@@ -128,7 +171,7 @@ fun ConversationListPanel(
         Divider(
             thickness = 1.dp,
             modifier = Modifier.padding(vertical = 8.dp),
-            color = MaterialTheme.colors.primary.copy(alpha = 0.5f)
+            color = currentTheme.primaryColor.copy(alpha = 0.5f)
         )
         Spacer(modifier = Modifier.height(4.dp))  // 在对话列表前添加间距
         conversationsState.forEachIndexed { index, conversation ->
@@ -139,10 +182,29 @@ fun ConversationListPanel(
                 conversation = conversation,
                 isSelected = conversation.id == currentConversationIdState,
                 currentTheme = currentTheme,
+                systemConfig = systemConfig,
                 onSelect = {
                     logger.info("ConversationItem onSelect called: id={}, name={}", conversation.id, conversation.name)
                     currentConversationIdState = conversation.id
                     onConversationSelect(conversation.id)
+                },
+                onDelete = {
+                    logger.info("Delete conversation requested: id={}, name={}", conversation.id, conversation.name)
+                    // 删除对话逻辑
+                    ConversationManager.conversationsList.removeIf { it.id == conversation.id }
+                    // 如果删除的是当前对话，切换到第一个对话
+                    if (ConversationManager.currentConversationId == conversation.id && ConversationManager.conversationsList.isNotEmpty()) {
+                        ConversationManager.currentConversationId = ConversationManager.conversationsList.first().id
+                    }
+                    // 更新UI状态
+                    conversationsState = ConversationManager.conversationsList.toList()
+                    onUpdateConversationConfig()
+                },
+                onRename = {
+                    logger.info("Rename conversation requested: id={}, name={}", conversation.id, conversation.name)
+                    // 打开重命名对话框
+                    showRenameDialog = true
+                    conversationToRename = conversation
                 }
             )
         }
@@ -151,8 +213,39 @@ fun ConversationListPanel(
     // 创建对话对话框
     if (showCreateDialog) {
         CreateConversationDialog(
-            onDismiss = { showCreateDialog = false },
-            onConfirm = { name: String ->
+        onDismiss = { showCreateDialog = false },
+        onConfirm = { name: String ->
+            // 创建新对话
+            val newConversation = Conversation(
+                id = UUID.randomUUID().toString(),
+                name = name,
+                messages = emptyList()
+            )
+            ConversationManager.conversationsList.add(newConversation)
+            // 更新UI状态
+            conversationsState = ConversationManager.conversationsList.toList()
+            currentConversationIdState = newConversation.id
+            ConversationManager.currentConversationId = newConversation.id
+            onUpdateConversationConfig()
+            showCreateDialog = false
+        },
+        systemConfig = systemConfig,
+        currentTheme = currentTheme
+    )
+    }
+
+    // 成员设置对话框
+    if (showMemberSettings) {
+        MemberSettingsDialog(
+            members = MemberManager.membersList,
+            onDismiss = { showMemberSettings = false },
+            onMemberSelected = { memberId: String ->
+                // 切换成员并触发保存
+                MemberManager.currentMemberId = memberId
+
+                onUpdateSystemConfig()
+            },
+            onMemberCreated = { name: String, tags: String ->
                 // 创建新对话
                 val newConversation = Conversation(
                     id = UUID.randomUUID().toString(),
@@ -166,7 +259,9 @@ fun ConversationListPanel(
                 ConversationManager.currentConversationId = newConversation.id
                 onUpdateConversationConfig()
                 showCreateDialog = false
-            }
+            },
+            currentTheme = GlobalTheme.value,
+            systemConfig = systemConfig
         )
     }
 
@@ -199,27 +294,83 @@ fun ConversationListPanel(
                 logger.info("onUpdateSystemConfig called")
                 showMemberSettings = false
             },
-            currentTheme = GlobalTheme.value
+            currentTheme = GlobalTheme.value,
+            systemConfig = systemConfig
+        )
+    }
+    
+    // 重命名对话框
+    if (showRenameDialog && conversationToRename != null) {
+        RenameDialog(
+            currentName = conversationToRename!!.name,
+            onDismiss = { 
+                showRenameDialog = false
+                conversationToRename = null
+            },
+            onConfirm = { newName ->
+                logger.info("Renaming conversation from '{}' to '{}'", conversationToRename!!.name, newName)
+                
+                // 更新对话名称
+                val updatedConversation = conversationToRename!!.copy(name = newName)
+                val index = ConversationManager.conversationsList.indexOfFirst { it.id == conversationToRename!!.id }
+                if (index != -1) {
+                    ConversationManager.conversationsList[index] = updatedConversation
+                    conversationsState = ConversationManager.conversationsList.toList()
+                    onUpdateConversationConfig()
+                    logger.info("Conversation renamed successfully")
+                }
+                
+                showRenameDialog = false
+                conversationToRename = null
+            },
+            currentTheme = currentTheme,
+            systemConfig = systemConfig
         )
     }
 }
 
+/**
+ * 对话项组件，显示单个对话并提供交互功能
+ * 
+ * @param conversation 对话对象
+ * @param isSelected 是否被选中
+ * @param onSelect 选择对话的回调函数
+ * @param currentTheme 当前主题
+ * @param systemConfig 系统配置
+ * @param onDelete 删除对话的回调函数
+ * @param onRename 重命名对话的回调函数
+ * @param modifier 修饰符，用于调整组件的外观和布局
+ */
 @Composable
 fun ConversationItem(
     conversation: Conversation,
     isSelected: Boolean,
     onSelect: () -> Unit,
     currentTheme: AppTheme,
+    systemConfig: SystemConfig,
+    onDelete: () -> Unit,
+    onRename: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showContextMenu by remember { mutableStateOf(false) }
+    var contextMenuPosition by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onSelect),
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onSelect() },
+                    onLongPress = { offset: androidx.compose.ui.geometry.Offset ->
+                        contextMenuPosition = offset
+                        showContextMenu = true
+                    }
+                )
+            },
         elevation = if (isSelected) 12.dp else 4.dp,
-        backgroundColor = if (isSelected) currentTheme.primaryColor.copy(alpha = 0.9f) else MaterialTheme.colors.surface,
+        backgroundColor = if (isSelected) currentTheme.primaryColor.copy(alpha = 0.9f) else currentTheme.surfaceColor,
         shape = MaterialTheme.shapes.medium,
-        border = if (isSelected) BorderStroke(2.dp, currentTheme.primaryColor) else BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.2f))
+        border = if (isSelected) BorderStroke(2.dp, currentTheme.primaryColor) else BorderStroke(1.dp, currentTheme.primaryColor.copy(alpha = 0.2f))
     ) {
         Row(
             modifier = Modifier
@@ -242,9 +393,9 @@ fun ConversationItem(
                 text = conversation.name,
                 style = MaterialTheme.typography.h6.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    fontSize = 16.sp
+                    fontSize = systemConfig.fontSize.sp
                 ),
-                color = if (isSelected) currentTheme.secondaryColor else MaterialTheme.colors.onSurface,
+                color = if (isSelected) currentTheme.onPrimaryColor else currentTheme.onSurfaceColor,
                 modifier = Modifier.weight(1f)
             )
 
@@ -259,12 +410,31 @@ fun ConversationItem(
             }
         }
     }
+    
+    // 右键菜单
+    if (showContextMenu) {
+        ContextMenu(
+            conversation = conversation,
+            currentTheme = currentTheme,
+            onDismiss = { showContextMenu = false },
+            onDelete = {
+                showContextMenu = false
+                onDelete()
+            },
+            onRename = {
+                showContextMenu = false
+                onRename()
+            }
+        )
+    }
 }
 
 @Composable
 fun CreateConversationDialog(
     onDismiss: () -> Unit,
-    onConfirm: (name: String) -> Unit
+    onConfirm: (name: String) -> Unit,
+    systemConfig: SystemConfig,
+    currentTheme: AppTheme
 ) {
     var name by remember { mutableStateOf("") }
 
@@ -275,7 +445,7 @@ fun CreateConversationDialog(
                 "创建新对话",
                 style = MaterialTheme.typography.h6.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
+                    fontSize = (systemConfig.fontSize * 1.375).sp  // 22sp = 16sp * 1.375
                 ),
                 color = MaterialTheme.colors.primary
             )
@@ -288,7 +458,8 @@ fun CreateConversationDialog(
                     "请输入新对话的名称",
                     style = MaterialTheme.typography.body1,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    fontSize = systemConfig.fontSize.sp
                 )
                 OutlinedTextField(
                     value = name,
@@ -322,8 +493,8 @@ fun CreateConversationDialog(
                 },
                 enabled = name.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.primary,
-                    contentColor = MaterialTheme.colors.onPrimary
+                    backgroundColor = currentTheme.primaryColor,
+                    contentColor = currentTheme.onPrimaryColor
                 ),
                 modifier = Modifier.padding(8.dp),
                 shape = MaterialTheme.shapes.medium
@@ -340,7 +511,7 @@ fun CreateConversationDialog(
             TextButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colors.primary
+                    contentColor = currentTheme.primaryColor
                 ),
                 modifier = Modifier.padding(8.dp)
             ) {
@@ -365,7 +536,8 @@ fun MemberSettingsDialog(
     onDismiss: () -> Unit,
     onMemberSelected: (String) -> Unit,
     onMemberCreated: (name: String, tags: String) -> Unit,
-    currentTheme: AppTheme
+    currentTheme: AppTheme,
+    systemConfig: SystemConfig
 ) {
     var name by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
@@ -378,7 +550,7 @@ fun MemberSettingsDialog(
                 "成员设置",
                 style = MaterialTheme.typography.h6.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
+                    fontSize = (systemConfig.fontSize * 1.375).sp  // 22sp = 16sp * 1.375
                 ),
                 color = MaterialTheme.colors.primary
             )
@@ -393,7 +565,7 @@ fun MemberSettingsDialog(
                     "当前成员列表",
                     style = MaterialTheme.typography.subtitle1.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+                        fontSize = (systemConfig.fontSize * 1.125).sp  // 18sp = 16sp * 1.125
                     ),
                     modifier = Modifier.padding(bottom = 12.dp),
                     color = MaterialTheme.colors.primary
@@ -429,7 +601,7 @@ fun MemberSettingsDialog(
                                     text = member.name,
                                     style = MaterialTheme.typography.body1.copy(
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
+                                        fontSize = systemConfig.fontSize.sp
                                     ),
                                     modifier = Modifier.weight(1f),
                                     color = if (member.id == MemberManager.currentMemberId)
@@ -481,7 +653,7 @@ fun MemberSettingsDialog(
                     "创建新成员",
                     style = MaterialTheme.typography.subtitle1.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+                        fontSize = (systemConfig.fontSize * 1.125).sp  // 18sp = 16sp * 1.125
                     ),
                     modifier = Modifier.padding(bottom = 12.dp),
                     color = MaterialTheme.colors.primary
@@ -530,7 +702,8 @@ fun MemberSettingsDialog(
                     "注意：创建成员是一项严肃的责任，请确保理解并尊重每个意识体的独立性。",
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 4.dp),
+                    fontSize = (systemConfig.fontSize * 0.75).sp  // 12sp = 16sp * 0.75
                 )
             }
         },
@@ -546,8 +719,8 @@ fun MemberSettingsDialog(
                 },
                 enabled = name.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.primary,
-                    contentColor = MaterialTheme.colors.onPrimary
+                    backgroundColor = currentTheme.primaryColor,
+                    contentColor = currentTheme.onPrimaryColor
                 ),
                 modifier = Modifier.padding(8.dp),
                 shape = MaterialTheme.shapes.medium,
@@ -565,7 +738,7 @@ fun MemberSettingsDialog(
             TextButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colors.primary
+                    contentColor = currentTheme.primaryColor
                 ),
                 modifier = Modifier.padding(8.dp)
             ) {
@@ -603,7 +776,6 @@ fun MultiAppScreen(
                 enableNotifications = appSettings?.get("enableNotifications") as? Boolean ?: true,
                 enableSoundEffects = appSettings?.get("enableSoundEffects") as? Boolean ?: false,
                 fontSize = (appSettings?.get("fontSize") as? Number)?.toInt() ?: 16,
-                messageHistoryLimit = (appSettings?.get("messageHistoryLimit") as? Number)?.toInt() ?: 1000,
                 autoSaveEnabled = appSettings?.get("autoSaveEnabled") as? Boolean ?: true
             )
         )
@@ -677,7 +849,7 @@ fun MultiAppScreen(
 
     var showSettingsDialog by remember { mutableStateOf(false) }
     var showPersonalizeDialog by remember { mutableStateOf(false) }
-    var showColorCustomizeDialog by remember { mutableStateOf(false) }
+    // 删除颜色个性化功能
     var showAboutDialog by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
@@ -690,7 +862,7 @@ fun MultiAppScreen(
             onAboutClick = { showAboutDialog = true },
             onExportClick = { showExportDialog = true },
             onImportClick = { showImportDialog = true },
-            onColorCustomizeClick = { showColorCustomizeDialog = true }
+            onColorCustomizeClick = { /* 颜色个性化功能已删除 */ }
         )
 
         Row(Modifier.weight(1f)) {
@@ -699,6 +871,7 @@ fun MultiAppScreen(
             conversations = conversationConfig.conversationsList,
             currentConversationId = conversationConfig.currentConversationId,
             currentTheme = getCurrentAppTheme(),
+            systemConfig = systemConfig,
             onConversationSelect = { id: String ->
                 // 更新当前对话
                 logger.info("Selecting conversation with id: {}", id)
@@ -739,7 +912,7 @@ fun MultiAppScreen(
         ConversationPanel(
             systemConfig = systemConfig,
             currentConversationId = conversationConfig.currentConversationId,
-            currentTheme = getCurrentAppTheme(),
+            currentTheme = GlobalTheme.value,
             conversationsList = conversationConfig.conversationsList,
             onMessageSend = { message ->
                 logger.info("Sending message: {}", message)
@@ -840,12 +1013,7 @@ fun MultiAppScreen(
         )
     }
 
-    if (showColorCustomizeDialog) {
-        ColorCustomizeDialog(
-            onDismiss = { showColorCustomizeDialog = false },
-            dataRepository = dataRepository
-        )
-    }
+    // 颜色个性化对话框已删除
 
     if (showAboutDialog) {
         AboutDialog(

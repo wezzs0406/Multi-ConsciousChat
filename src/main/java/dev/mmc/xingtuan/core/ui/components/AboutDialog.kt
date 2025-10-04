@@ -1,6 +1,7 @@
 package dev.mmc.xingtuan.core.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -182,6 +184,55 @@ fun AboutDialog(
                             color = MaterialTheme.colors.onSurface,
                             lineHeight = 20.sp
                         )
+                    }
+                }
+
+                // 项目链接
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = MaterialTheme.colors.surface,
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 1.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "项目地址",
+                            style = MaterialTheme.typography.h6,
+                            color = MaterialTheme.colors.onSurface
+                        )
+                        
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    try {
+                                        val projectUrl = "https://github.com/wezzs0406/Multi-ConsciousChat"
+                                        java.awt.Desktop.getDesktop().browse(java.net.URI(projectUrl))
+                                    } catch (e: Exception) {
+                                        // 处理无法打开浏览器的情况
+                                    }
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "项目地址",
+                                tint = GlobalTheme.value.primaryColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "github.com/wezzs0406/Multi-ConsciousChat",
+                                style = MaterialTheme.typography.caption.copy(
+                                    color = GlobalTheme.value.primaryColor,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
                     }
                 }
 

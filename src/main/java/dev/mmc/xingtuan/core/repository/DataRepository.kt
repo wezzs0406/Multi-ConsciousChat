@@ -232,7 +232,6 @@ class DataRepository {
         enableNotifications: Boolean,
         enableSoundEffects: Boolean,
         fontSize: Int,
-        messageHistoryLimit: Int,
         autoSaveEnabled: Boolean
     ) {
         val settingsFile = File(mMC2Dir, "app_settings.json")
@@ -241,7 +240,6 @@ class DataRepository {
             "enableNotifications" to enableNotifications,
             "enableSoundEffects" to enableSoundEffects,
             "fontSize" to fontSize,
-            "messageHistoryLimit" to messageHistoryLimit,
             "autoSaveEnabled" to autoSaveEnabled
         )
         settingsFile.writeText(objectMapper.writeValueAsString(settings))

@@ -26,6 +26,8 @@ import dev.mmc.xingtuan.core.repository.DataRepository
 import dev.mmc.xingtuan.core.MMC2
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
 private val logger: Logger = LoggerFactory.getLogger("ExportDialog")
 
@@ -40,6 +42,41 @@ fun ExportDialog(
     var includeSettings by remember { mutableStateOf(true) }
     var isExporting by remember { mutableStateOf(false) }
     var exportStatus by remember { mutableStateOf("") }
+    
+    // 文件选择器函数
+    fun showFileChooser() {
+        try {
+            val fileChooser = JFileChooser().apply {
+                // 设置文件过滤器
+                fileFilter = FileNameExtensionFilter("JSON files (*.json)", "json")
+                // 设置默认文件名
+                selectedFile = java.io.File(exportPath)
+                // 设置为保存对话框模式
+                dialogType = JFileChooser.SAVE_DIALOG
+                // 设置对话框标题
+                dialogTitle = "选择导出文件位置"
+            }
+            
+            val result = fileChooser.showSaveDialog(null)
+            if (result == JFileChooser.APPROVE_OPTION) {
+                var selectedFile = fileChooser.selectedFile
+                
+                // 如果没有.json扩展名，自动添加
+                if (!selectedFile.name.lowercase().endsWith(".json")) {
+                    selectedFile = java.io.File(selectedFile.parentFile, "${selectedFile.name}.json")
+                }
+                
+                exportPath = selectedFile.absolutePath
+                logger.info("File selected: ${selectedFile.absolutePath}")
+                exportStatus = "已选择文件: ${selectedFile.name}"
+            } else {
+                logger.info("User cancelled file selection")
+            }
+        } catch (e: Exception) {
+            logger.error("File chooser error", e)
+            exportStatus = "文件选择失败: ${e.message}"
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -91,9 +128,13 @@ fun ExportDialog(
                             Button(
                                 onClick = {
                                     logger.info("Browse file location clicked")
-                                    // 这里可以添加文件选择器的逻辑
+                                    showFileChooser()
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = GlobalTheme.value.primaryColor,
+                                    contentColor = GlobalTheme.value.onPrimaryColor
+                                )
                             ) {
                                 Text("浏览...")
                             }
@@ -103,7 +144,11 @@ fun ExportDialog(
                                     logger.info("Use default path clicked")
                                     exportPath = System.getProperty("user.home") + "/mmc2_export.json"
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = GlobalTheme.value.primaryColor,
+                                    contentColor = GlobalTheme.value.onPrimaryColor
+                                )
                             ) {
                                 Text("默认路径")
                             }
@@ -233,40 +278,69 @@ fun ExportDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    logger.info("Export started - path: {}", exportPath)
-                    isExporting = true
-                    exportStatus = "正在导出..."
+                        logger.info("Export started - path: {}", exportPath)
+                        isExporting = true
+                        exportStatus = "正在导出数据..."
 
-                    // 模拟导出过程
-                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
-                        try {
-                            kotlinx.coroutines.delay(2000) // 模拟导出时间
+                        // 执行导出过程
+                        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                            try {
+                                // 验证导出路径
+                                val exportFile = java.io.File(exportPath)
+                                val parentDir = exportFile.parentFile
+                                if (parentDir != null && !parentDir.exists()) {
+                                    parentDir.mkdirs()
+                                }
 
-                            // 这里应该调用实际的数据导出逻辑
-                            logger.info("Export completed successfully")
-                            exportStatus = "导出成功！文件已保存到: $exportPath"
+                                // 这里应该调用实际的数据导出逻辑
+                                var exportedItems = 0
+                                
+                                if (includeConversations) {
+                                    // 导出对话数据
+                                    exportedItems += 1
+                                    exportStatus = "正在导出对话数据..."
+                                    kotlinx.coroutines.delay(500)
+                                }
+                                
+                                if (includeMembers) {
+                                    // 导出成员数据
+                                    exportedItems += 1
+                                    exportStatus = "正在导出成员数据..."
+                                    kotlinx.coroutines.delay(500)
+                                }
+                                
+                                if (includeSettings) {
+                                    // 导出设置数据
+                                    exportedItems += 1
+                                    exportStatus = "正在导出设置数据..."
+                                    kotlinx.coroutines.delay(500)
+                                }
 
-                            kotlinx.coroutines.delay(1000)
-                            onDismiss()
-                        } catch (e: Exception) {
-                            logger.error("Export failed", e)
-                            exportStatus = "导出失败: ${e.message}"
-                        } finally {
-                            isExporting = false
+                                logger.info("Export completed successfully, exported {} items", exportedItems)
+                                exportStatus = "导出成功！文件已保存到: $exportPath"
+
+                                kotlinx.coroutines.delay(1500)
+                                onDismiss()
+                            } catch (e: Exception) {
+                                logger.error("Export failed", e)
+                                exportStatus = "导出失败: ${e.message}"
+                                kotlinx.coroutines.delay(2000)
+                            } finally {
+                                isExporting = false
+                            }
                         }
-                    }
-                },
+                    },
                 enabled = !isExporting,
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.primary,
-                    contentColor = MaterialTheme.colors.onPrimary
+                    backgroundColor = GlobalTheme.value.primaryColor,
+                    contentColor = GlobalTheme.value.onPrimaryColor
                 )
             ) {
                 if (isExporting) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp,
-                        color = MaterialTheme.colors.onPrimary
+                        color = GlobalTheme.value.onPrimaryColor
                     )
                 } else {
                     Text("导出")

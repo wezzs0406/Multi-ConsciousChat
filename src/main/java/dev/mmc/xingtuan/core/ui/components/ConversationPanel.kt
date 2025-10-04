@@ -54,7 +54,7 @@ fun ConversationPanel(
                 text = currentConversation.name,
                 style = MaterialTheme.typography.h4.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = (systemConfig.fontSize * 1.5).sp
                 ),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -70,7 +70,7 @@ fun ConversationPanel(
         ) {
             if (currentConversation != null) {
                 items(currentConversation.messages) { message ->
-                    MessageItem(message = message, isCurrentMember = message.sender.id == systemConfig.currentMemberId, currentTheme = currentTheme)
+                    MessageItem(message = message, isCurrentMember = message.sender.id == systemConfig.currentMemberId, currentTheme = currentTheme, systemConfig = systemConfig)
                 }
             }
         }
@@ -97,7 +97,8 @@ fun ConversationPanel(
                 placeholder = {
                     Text(
                         text = "输入消息...",
-                        color = currentTheme.secondaryColor.copy(alpha = 0.5f)
+                        color = currentTheme.secondaryColor.copy(alpha = 0.5f),
+                        fontSize = systemConfig.fontSize.sp
                     )
                 },
                 modifier = Modifier
@@ -140,7 +141,7 @@ fun ConversationPanel(
 }
 
 @Composable
-fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppTheme) {
+fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppTheme, systemConfig: SystemConfig) {
     // 判断是否为米白主题
     val isRiceWhiteTheme = currentTheme.name == "米白"
     val isGreenTheme = currentTheme.name == "自然绿"
@@ -158,18 +159,11 @@ fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppThe
 
     val alignment = if (isCurrentMember) Alignment.End else Alignment.Start
 
-    // 统一的文字颜色判断逻辑，米白主题下强制使用黑色
-    val textColor = if (isRiceWhiteTheme) {
-        Color(0xFF000000) // 米白主题下使用纯黑色
-    } else if (isGreenTheme) {
-        Color(0xFF579728) // 绿色主题下使用深绿色
-    }
-    else {
-        if (isCurrentMember) {
-            currentTheme.secondaryColor  // 当前成员用主题文字色（对比色）
-        } else {
-            darkenColor(currentTheme.primaryColor)// 其他成员用主题主色
-        }
+    // 使用主题中定义的字体颜色
+    val textColor = if (isCurrentMember) {
+        currentTheme.onPrimaryColor  // 当前成员使用主色上的文字颜色
+    } else {
+        currentTheme.onBackgroundColor  // 其他成员使用背景上的文字颜色
     }
 
     // 根据发送者位置调整内边距
@@ -184,17 +178,17 @@ fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppThe
         // 只为非当前成员显示发送者名称（不包含时间）
         if (!isCurrentMember) {
             Text(
-                text = message.sender.name,
-                style = MaterialTheme.typography.subtitle2.copy(
-                    fontWeight = FontWeight.SemiBold,  // 使用半粗体
-                    fontSize = 14.sp
-                ),
-                color = textColor,
-                modifier = Modifier
-                    .padding(horizontal = horizontalPadding)
-                    .padding(bottom = 6.dp)  // 增加间距
-                    .align(alignment)  // 根据消息位置对齐
-            )
+                    text = message.sender.name,
+                    style = MaterialTheme.typography.subtitle2.copy(
+                        fontWeight = FontWeight.SemiBold,  // 使用半粗体
+                        fontSize = (systemConfig.fontSize * 0.875).sp  // 14sp = 16sp * 0.875
+                    ),
+                    color = textColor,
+                    modifier = Modifier
+                        .padding(horizontal = horizontalPadding)
+                        .padding(bottom = 6.dp)  // 增加间距
+                        .align(alignment)  // 根据消息位置对齐
+                )
         }
 
         // 使用Surface替代Card以获得更现代的效果
@@ -237,8 +231,8 @@ fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppThe
                 Text(
                     text = message.content,
                     style = MaterialTheme.typography.body1.copy(
-                        fontSize = 15.sp,
-                        lineHeight = 20.sp  // 增加行高，提高可读性
+                        fontSize = (systemConfig.fontSize * 0.9375).sp,  // 15sp = 16sp * 0.9375
+                        lineHeight = (systemConfig.fontSize * 1.25).sp  // 动态行高
                     ),
                     color = textColor,
                     modifier = Modifier.fillMaxWidth()
@@ -249,7 +243,7 @@ fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppThe
                 Text(
                     text = message.timestamp.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("HH:mm")),
                     style = MaterialTheme.typography.caption.copy(
-                        fontSize = 11.sp
+                        fontSize = (systemConfig.fontSize * 0.6875).sp  // 11sp = 16sp * 0.6875
                     ),
                     color = textColor.copy(alpha = 0.6f),
                     modifier = Modifier.align(Alignment.End)

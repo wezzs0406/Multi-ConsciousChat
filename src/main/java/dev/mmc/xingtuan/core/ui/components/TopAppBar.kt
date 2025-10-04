@@ -12,11 +12,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.mmc.xingtuan.core.MMC2
 
+/**
+ * 应用主题数据类，定义了应用的所有颜色属性
+ * 
+ * @param name 主题名称，用于在UI中显示
+ * @param primaryColor 主色调，用于主要UI元素如按钮、选中状态等
+ * @param secondaryColor 次要色调，用于强调元素、图标等
+ * @param backgroundColor 背景色，用于应用主背景
+ * @param surfaceColor 表面色，用于卡片、对话框等表面元素，默认与背景色相同
+ * @param onPrimaryColor 主色调上的文字颜色，默认为白色
+ * @param onSecondaryColor 次要色调上的文字颜色，默认为黑色
+ * @param onBackgroundColor 背景色上的文字颜色，默认为黑色
+ * @param onSurfaceColor 表面色上的文字颜色，默认为黑色
+ * @param fontColor 全局字体颜色，用于所有文本元素，默认为黑色
+ */
 data class AppTheme(
     val name: String,
     val primaryColor: Color,
     val secondaryColor: Color,
-    val backgroundColor: Color
+    val backgroundColor: Color,
+    val surfaceColor: Color = backgroundColor,
+    val onPrimaryColor: Color = Color.White,
+    val onSecondaryColor: Color = Color.Black,
+    val onBackgroundColor: Color = Color.Black,
+    val onSurfaceColor: Color = Color.Black,
+    val fontColor: Color = Color.Black
 )
 
 @Composable
@@ -142,21 +162,7 @@ fun TopAppBar(
                     }
                 }
 
-                DropdownMenuItem(
-                    onClick = {
-                        showMenu = false
-                        onColorCustomizeClick()
-                    }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Settings, contentDescription = "颜色个性化")
-                        Spacer(Modifier.width(8.dp))
-                        Text("颜色个性化")
-                    }
-                }
+                // 颜色个性化功能已删除
 
                 DropdownMenuItem(
                     onClick = {
@@ -221,37 +227,42 @@ var themes = mutableListOf(
         name = "米白",
         primaryColor = Color(0xFFF5F5F0), // 米白色
         secondaryColor = Color(0xFF333333), // 深灰色文字
-        backgroundColor = Color(0xFFF5F5F5)
+        backgroundColor = Color(0xFFF5F5F5),
+        fontColor = Color(0xFF333333)
             ),
     AppTheme(
         name = "温柔紫",
         primaryColor = Color(0xffccade3),
         secondaryColor = Color(0xFF101010),
-        backgroundColor = Color(0xFFF9F4FF)
+        backgroundColor = Color(0xFFF9F4FF),
+        fontColor = Color(0xFF101010)
             ),
     AppTheme(
         name = "自然绿",
         primaryColor = Color(0xffc4e3ad),
         secondaryColor = Color(0xFF101010),
-        backgroundColor = Color(0xFFF1F8E9)
+        backgroundColor = Color(0xFFF1F8E9),
+        fontColor = Color(0xFF101010)
             ),
     AppTheme(
         name = "温暖橙",
         primaryColor = Color(0xFFE8B26B),
         secondaryColor = Color.White,
-        backgroundColor = Color(0xFFFFF3E0)
+        backgroundColor = Color(0xFFFFF3E0),
+        fontColor = Color(0xFF333333)
             ),
     AppTheme(
         name = "深邃夜",
         primaryColor = Color(0xffefa1b6),
         secondaryColor = Color(0xFFFFFFFF),
-        backgroundColor = Color(0xFFEEEDED)
+        backgroundColor = Color(0xFFEEEDED),
+        fontColor = Color(0xFF333333)
     )
 )
 
 // 主题管理
 private var currentThemeIndex = 0
-private var themeUpdateTrigger by mutableStateOf(0) // 用于触发UI更新
+var themeUpdateTrigger by mutableStateOf(0) // 用于触发UI更新
 
 // 全局主题状态
 val GlobalTheme = mutableStateOf(themes[currentThemeIndex])
