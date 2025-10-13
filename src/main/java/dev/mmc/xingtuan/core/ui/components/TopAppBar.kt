@@ -20,9 +20,9 @@ import dev.mmc.xingtuan.core.MMC2
  * @param secondaryColor 次要色调，用于强调元素、图标等
  * @param backgroundColor 背景色，用于应用主背景
  * @param surfaceColor 表面色，用于卡片、对话框等表面元素，默认与背景色相同
- * @param onPrimaryColor 主色调上的文字颜色，默认为白色
+ * @param onPrimaryColor 主色调上的文字颜色，默认为白色(除米白)
  * @param onSecondaryColor 次要色调上的文字颜色，默认为黑色
- * @param onBackgroundColor 背景色上的文字颜色，默认为黑色
+ * @param onBackgroundColor 背景色上的文字颜色，默认为主题色加深
  * @param onSurfaceColor 表面色上的文字颜色，默认为黑色
  * @param fontColor 全局字体颜色，用于所有文本元素，默认为黑色
  */
@@ -32,13 +32,28 @@ data class AppTheme(
     val secondaryColor: Color,
     val backgroundColor: Color,
     val surfaceColor: Color = backgroundColor,
-    val onPrimaryColor: Color = Color.White,
+    val onPrimaryColor: Color = if (name == "米白") Color.Black else Color.White,
     val onSecondaryColor: Color = Color.Black,
-    val onBackgroundColor: Color = Color.Black,
+    val onBackgroundColor: Color = darkenColor(primaryColor,0.7f),
     val onSurfaceColor: Color = Color.Black,
     val fontColor: Color = Color.Black
 )
 
+/**
+ * 顶部应用栏组件，提供应用标题和主要操作按钮
+ * 
+ * 这个组件显示在应用的顶部，包含应用名称和一系列操作按钮，如搜索、个性化设置、
+ * 菜单等。它使用当前主题的颜色和样式来保持界面的一致性。
+ * 
+ * @param onSettingsClick 设置按钮点击的回调函数
+ * @param onPersonalizeClick 个性化按钮点击的回调函数
+ * @param onSearchClick 搜索按钮点击的回调函数
+ * @param onAboutClick 关于按钮点击的回调函数
+ * @param onExportClick 导出按钮点击的回调函数
+ * @param onImportClick 导入按钮点击的回调函数
+ * @param onColorCustomizeClick 颜色自定义按钮点击的回调函数（已移除功能）
+ * @param modifier 修饰符，用于调整组件的外观和布局
+ */
 @Composable
 fun TopAppBar(
     onSettingsClick: () -> Unit,
@@ -50,174 +65,185 @@ fun TopAppBar(
     onColorCustomizeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 菜单显示状态，控制下拉菜单的显示和隐藏
     var showMenu by remember { mutableStateOf(false) }
+    // 当前主题状态，用于应用主题颜色
     var currentTheme by remember { mutableStateOf(getCurrentTheme()) }
-    // 监听主题更新触发器
+    
+    // 监听主题更新触发器，当主题变化时更新当前主题
     LaunchedEffect(themeUpdateTrigger) {
         currentTheme = getCurrentTheme()
     }
 
+    // 创建Material Design风格的顶部应用栏
     TopAppBar(
         title = {
+            // 应用标题区域
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                verticalAlignment = Alignment.CenterVertically, // 垂直居中对齐
+                horizontalArrangement = Arrangement.Start // 水平左对齐
             ) {
                 Text(
-                    text = MMC2.NAME,
+                    text = MMC2.NAME, // 显示应用名称
                     style = MaterialTheme.typography.h6.copy(
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold // 设置字体为粗体
                     ),
-                    color = currentTheme.secondaryColor
+                    color = currentTheme.onPrimaryColor // 使用当前主题的主色调上的文字颜色
                 )
             }
         },
         actions = {
+            // 操作按钮区域
             // 搜索按钮
             IconButton(
-                onClick = onSearchClick,
-                modifier = Modifier.padding(end = 4.dp)
+                onClick = onSearchClick, // 点击时调用搜索回调
+                modifier = Modifier.padding(end = 4.dp) // 设置右边距
             ) {
                 Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "搜索",
-                    tint = currentTheme.secondaryColor
+                    imageVector = Icons.Default.Search, // 使用搜索图标
+                    contentDescription = "搜索", // 图标的内容描述
+                    tint = currentTheme.onPrimaryColor // 使用当前主题的主色调上的文字颜色
                 )
             }
 
             // 个性化按钮
             IconButton(
-                onClick = onPersonalizeClick,
-                modifier = Modifier.padding(end = 4.dp)
+                onClick = onPersonalizeClick, // 点击时调用个性化回调
+                modifier = Modifier.padding(end = 4.dp) // 设置右边距
             ) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "个性化",
-                    tint = currentTheme.secondaryColor
+                    imageVector = Icons.Default.Settings, // 使用设置图标
+                    contentDescription = "个性化", // 图标的内容描述
+                    tint = currentTheme.onPrimaryColor // 使用当前主题的主色调上的文字颜色
                 )
             }
 
             // 菜单按钮
             IconButton(
-                onClick = { showMenu = true },
-                modifier = Modifier.padding(end = 8.dp)
+                onClick = { showMenu = true }, // 点击时显示下拉菜单
+                modifier = Modifier.padding(end = 8.dp) // 设置右边距
             ) {
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "更多选项",
-                    tint = currentTheme.secondaryColor
+                    imageVector = Icons.Default.MoreVert, // 使用更多选项图标
+                    contentDescription = "更多选项", // 图标的内容描述
+                    tint = currentTheme.onPrimaryColor // 使用当前主题的主色调上的文字颜色
                 )
             }
 
             // 下拉菜单
             DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false }
+                expanded = showMenu, // 菜单是否展开
+                onDismissRequest = { showMenu = false } // 点击外部时关闭菜单
             ) {
+                // 信息导出菜单项
                 DropdownMenuItem(
                     onClick = {
-                        showMenu = false
-                        onExportClick()
+                        showMenu = false // 关闭菜单
+                        onExportClick() // 调用导出回调
                     }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(), // 填充父容器宽度
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
                     ) {
-                        Icon(Icons.Default.Done, contentDescription = "信息导出")
-                        Spacer(Modifier.width(8.dp))
-                        Text("信息导出")
+                        Icon(Icons.Default.Done, contentDescription = "信息导出") // 导出图标
+                        Spacer(Modifier.width(8.dp)) // 水平间距
+                        Text("信息导出") // 菜单项文本
                     }
                 }
 
+                // 信息导入菜单项
                 DropdownMenuItem(
                     onClick = {
-                        showMenu = false
-                        onImportClick()
+                        showMenu = false // 关闭菜单
+                        onImportClick() // 调用导入回调
                     }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(), // 填充父容器宽度
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "信息导入")
-                        Spacer(Modifier.width(8.dp))
-                        Text("信息导入")
+                        Icon(Icons.Default.Add, contentDescription = "信息导入") // 导入图标
+                        Spacer(Modifier.width(8.dp)) // 水平间距
+                        Text("信息导入") // 菜单项文本
                     }
                 }
 
+                // 设置菜单项
                 DropdownMenuItem(
                     onClick = {
-                        showMenu = false
-                        onSettingsClick()
+                        showMenu = false // 关闭菜单
+                        onSettingsClick() // 调用设置回调
                     }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(), // 填充父容器宽度
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
                     ) {
-                        Icon(Icons.Default.Settings, contentDescription = "设置")
-                        Spacer(Modifier.width(8.dp))
-                        Text("设置")
+                        Icon(Icons.Default.Settings, contentDescription = "设置") // 设置图标
+                        Spacer(Modifier.width(8.dp)) // 水平间距
+                        Text("设置") // 菜单项文本
                     }
                 }
 
-                // 颜色个性化功能已删除
-
+                // 个性化菜单项
                 DropdownMenuItem(
                     onClick = {
-                        showMenu = false
-                        onPersonalizeClick()
+                        showMenu = false // 关闭菜单
+                        onPersonalizeClick() // 调用个性化回调
                     }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(), // 填充父容器宽度
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
                     ) {
-                        Icon(Icons.Default.Settings, contentDescription = "个性化")
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Default.Settings, contentDescription = "个性化") // 个性化图标
+                        Spacer(Modifier.width(8.dp)) // 水平间距
                         Text("个性化")
                     }
                 }
 
+                // 搜索菜单项
                 DropdownMenuItem(
                     onClick = {
-                        showMenu = false
-                        onSearchClick()
+                        showMenu = false // 关闭菜单
+                        onSearchClick() // 调用搜索回调
                     }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(), // 填充父容器宽度
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
                     ) {
-                        Icon(Icons.Default.Search, contentDescription = "搜索")
-                        Spacer(Modifier.width(8.dp))
-                        Text("搜索")
+                        Icon(Icons.Default.Search, contentDescription = "搜索") // 搜索图标
+                        Spacer(Modifier.width(8.dp)) // 水平间距
+                        Text("搜索") // 菜单项文本
                     }
                 }
 
+                // 分割线
                 Divider()
 
+                // 关于菜单项
                 DropdownMenuItem(
                     onClick = {
-                        showMenu = false
-                        onAboutClick()
+                        showMenu = false // 关闭菜单
+                        onAboutClick() // 调用关于回调
                     }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(), // 填充父容器宽度
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
                     ) {
-                        Icon(Icons.Default.Info, contentDescription = "关于")
-                        Spacer(Modifier.width(8.dp))
-                        Text("关于")
+                        Icon(Icons.Default.Info, contentDescription = "关于") // 信息图标
+                        Spacer(Modifier.width(8.dp)) // 水平间距
+                        Text("关于") // 菜单项文本
                     }
                 }
             }
         },
-        backgroundColor = currentTheme.primaryColor,
-        contentColor = currentTheme.secondaryColor,
-        modifier = modifier
+        backgroundColor = currentTheme.primaryColor, // 使用当前主题的主色调作为背景色
+        contentColor = currentTheme.onPrimaryColor, // 使用当前主题的主色调上的文字颜色作为内容颜色
+        modifier = modifier // 应用传入的修饰符
     )
 }
 

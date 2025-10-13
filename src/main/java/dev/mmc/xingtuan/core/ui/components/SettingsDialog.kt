@@ -4,21 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.clickable
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.material.DropdownMenuItem
-import dev.mmc.xingtuan.core.ui.components.GlobalTheme
-import dev.mmc.xingtuan.core.repository.DataRepository
 import dev.mmc.xingtuan.core.core.conversations.ConversationManager
+import dev.mmc.xingtuan.core.repository.DataRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -41,9 +34,10 @@ fun SettingsDialog(
     // 加载应用设置
     val appSettings = dataRepository.loadAppSettings()
     var autoSaveEnabled by remember { mutableStateOf(appSettings?.get("autoSaveEnabled") as? Boolean ?: true) }
-    var fontSize by remember { mutableStateOf((appSettings?.get("fontSize") as? Number)?.toInt() ?: 16) }
     var showAdvancedOptions by remember { mutableStateOf(false) }
     var showClearChatConfirmDialog by remember { mutableStateOf(false) }
+    var showLogExportErrorDialog by remember { mutableStateOf(false) }
+    var logExportErrorMessage by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -96,19 +90,75 @@ fun SettingsDialog(
                             )
                         }
 
-                        // 字体大小
-                        OutlinedTextField(
-                            value = fontSize.toString(),
-                            onValueChange = {
-                                fontSize = it.toIntOrNull() ?: 16
-                                logger.info("Font size changed to: {}", fontSize)
-                            },
-                            label = { Text("字体大小") },
-                            placeholder = { Text("调整界面文字大小") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
+                        
 
+                        // 日志导出功能
+                        Button(
+                            onClick = {
+                                logger.info("Export logs button clicked")
+                                // 获取MMC2目录下的logs目录（根据logback.xml配置）
+                                val mmc2Dir = java.io.File(System.getProperty("user.home"), "MMC2")
+                                val logsDir = java.io.File(mmc2Dir, "logs")
+                                
+                                // 检查日志目录是否存在且不为空
+                                if (logsDir.exists() && logsDir.listFiles()?.isNotEmpty() == true) {
+                                    try {
+                                        // 使用AWT文件选择器让用户选择导出位置
+                                        val fileDialog = java.awt.FileDialog(null as java.awt.Frame?, "选择日志导出位置", java.awt.FileDialog.SAVE)
+                                        fileDialog.file = "MMC_logs.zip"
+                                        fileDialog.setFilenameFilter { _, name -> name.endsWith(".zip") || name.endsWith(".ZIP") }
+                                        fileDialog.isVisible = true
+                                        
+                                        // 检查用户是否选择了文件
+                                        if (fileDialog.file != null) {
+                                            val exportFile = java.io.File(fileDialog.directory, fileDialog.file)
+                                            
+                                            // 创建ZIP文件并添加所有日志文件
+                                            java.util.zip.ZipOutputStream(java.io.FileOutputStream(exportFile)).use { zos ->
+                                                var fileCount = 0
+                                                logsDir.walkTopDown().forEach { file ->
+                                                    if (file.isFile && file.extension.lowercase() == "log") {
+                                                        val relativePath = file.relativeTo(logsDir).path
+                                                        val entry = java.util.zip.ZipEntry(relativePath)
+                                                        zos.putNextEntry(entry)
+                                                        file.inputStream().use { input ->
+                                                            input.copyTo(zos)
+                                                        }
+                                                        zos.closeEntry()
+                                                        fileCount++
+                                                    }
+                                                }
+                                                logger.info("Exported {} log files to {}", fileCount, exportFile.absolutePath)
+                                            }
+                                            
+                                            // 显示成功消息
+                                            logger.info("日志导出成功: {}", exportFile.absolutePath)
+                                        } else {
+                                            logger.info("用户取消了日志导出操作")
+                                        }
+                                    } catch (e: Exception) {
+                                        logger.error("导出日志失败", e)
+                                        logExportErrorMessage = "导出日志失败: ${e.message}"
+                                        showLogExportErrorDialog = true
+                                    }
+                                } else {
+                                    logger.warn("日志目录不存在或为空: {}", logsDir.absolutePath)
+                                    logExportErrorMessage = "日志目录不存在或为空，无法导出日志。请确保应用程序已运行并生成了日志文件。"
+                                    showLogExportErrorDialog = true
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = GlobalTheme.value.primaryColor,
+                                contentColor = GlobalTheme.value.onPrimaryColor
+                            )
+                        ) {
+                            Text(
+                                text = "导出日志",
+                                style = MaterialTheme.typography.body1
+                            )
+                        }
+                        
                         // 消息历史限制功能已删除
                     }
                 }
@@ -173,12 +223,13 @@ fun SettingsDialog(
                             Button(
                                 onClick = {
                                     logger.info("Backup data button clicked")
-                                    val backupDir = java.io.File(System.getProperty("user.home"), "MMC2_backup")
+                                    // 在MMC2目录下创建backup子目录
+                                    val appDataDir = java.io.File(System.getProperty("user.home"), "MMC2")
+                                    val backupDir = java.io.File(appDataDir, "backup")
                                     if (!backupDir.exists()) {
                                         backupDir.mkdirs()
                                     }
                                     
-                                    val appDataDir = java.io.File(System.getProperty("user.home"), "MMC2")
                                     if (appDataDir.exists()) {
                                         val timestamp = java.time.LocalDateTime.now().toString().replace(":", "-")
                                         val backupFile = java.io.File(backupDir, "MMC2_backup_$timestamp.zip")
@@ -215,72 +266,7 @@ fun SettingsDialog(
                                 )
                             }
 
-                            // 导出日志按钮
-                            Button(
-                                onClick = {
-                                    logger.info("Export logs button clicked")
-                                    // 获取MMC2目录下的logs目录
-                                    val mmcDir = java.io.File(System.getProperty("user.home"), "MMC2")
-                                    val logsDir = java.io.File(mmcDir, "logs")
-                                    
-                                    // 如果logs目录不存在，尝试创建它
-                                    if (!logsDir.exists()) {
-                                        logsDir.mkdirs()
-                                        logger.info("创建日志目录: {}", logsDir.absolutePath)
-                                    }
-                                    
-                                    // 检查是否有日志文件
-                                    if (logsDir.listFiles()?.isNotEmpty() == true) {
-                                        try {
-                                            // 创建导出目录（如果不存在）
-                                            val exportDir = java.io.File(mmcDir, "exports")
-                                            if (!exportDir.exists()) {
-                                                exportDir.mkdirs()
-                                            }
-                                            
-                                            // 生成带时间戳的文件名
-                                            val timestamp = java.time.LocalDateTime.now()
-                                                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
-                                            val exportFile = java.io.File(exportDir, "MMC2_logs_$timestamp.zip")
-                                            
-                                            // 创建ZIP文件并添加所有日志文件
-                                            java.util.zip.ZipOutputStream(java.io.FileOutputStream(exportFile)).use { zos ->
-                                                var fileCount = 0
-                                                logsDir.walkTopDown().forEach { file ->
-                                                    if (file.isFile && file.extension.lowercase() == "log") {
-                                                        val relativePath = file.relativeTo(logsDir).path
-                                                        val entry = java.util.zip.ZipEntry(relativePath)
-                                                        zos.putNextEntry(entry)
-                                                        file.inputStream().use { input ->
-                                                            input.copyTo(zos)
-                                                        }
-                                                        zos.closeEntry()
-                                                        fileCount++
-                                                    }
-                                                }
-                                                logger.info("Exported {} log files to {}", fileCount, exportFile.absolutePath)
-                                            }
-                                            
-                                            // 显示成功消息
-                                            logger.info("日志导出成功: {}", exportFile.absolutePath)
-                                        } catch (e: Exception) {
-                                            logger.error("导出日志失败", e)
-                                        }
-                                    } else {
-                                        logger.warn("日志目录不存在或为空: {}", logsDir.absolutePath)
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = GlobalTheme.value.primaryColor,
-                                    contentColor = GlobalTheme.value.onPrimaryColor
-                                )
-                            ) {
-                                Text(
-                                    text = "导出日志",
-                                    style = MaterialTheme.typography.body1
-                                )
-                            }
+                            
                         }
                     }
                 }
@@ -297,10 +283,10 @@ fun SettingsDialog(
                         enableAnimations = true,
                         enableNotifications = true,
                         enableSoundEffects = false,
-                        fontSize = fontSize,
+                        fontSize = 16, // 使用默认字体大小
                         autoSaveEnabled = autoSaveEnabled
                     )
-                    logger.info("Settings saved: fontSize={}, autoSave={}", fontSize, autoSaveEnabled)
+                    logger.info("Settings saved: autoSave={}", autoSaveEnabled)
                     onDismiss()
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -393,6 +379,42 @@ fun SettingsDialog(
                     )
                 ) {
                     Text("取消")
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            backgroundColor = MaterialTheme.colors.surface
+        )
+    }
+    
+    // 日志导出错误对话框
+    if (showLogExportErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogExportErrorDialog = false },
+            title = {
+                Text(
+                    text = "导出日志失败",
+                    style = MaterialTheme.typography.h6.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colors.onSurface
+                )
+            },
+            text = {
+                Text(
+                    text = logExportErrorMessage,
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.onSurface
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showLogExportErrorDialog = false },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.primary,
+                        contentColor = MaterialTheme.colors.onPrimary
+                    )
+                ) {
+                    Text("确定")
                 }
             },
             shape = RoundedCornerShape(16.dp),

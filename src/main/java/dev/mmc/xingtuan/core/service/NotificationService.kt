@@ -1,6 +1,9 @@
 package dev.mmc.xingtuan.core.service
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import dev.mmc.xingtuan.core.MMC2
 import dev.mmc.xingtuan.core.repository.DataRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,15 +41,17 @@ class NotificationService(
     }
 
     fun showNewMessageNotification(senderName: String, messagePreview: String) {
+        val title = "Multi-ConsciousChat"
+        val fullMessage = "$senderName: $messagePreview"
         if (messagePreview.length > 50) {
-            showNotification("新消息", "$senderName: ${messagePreview.take(50)}...")
+            showNotification(title, "${fullMessage.take(50)}...")
         } else {
-            showNotification("新消息", "$senderName: $messagePreview")
+            showNotification(title, fullMessage)
         }
     }
 
     fun showSystemNotification(message: String) {
-        showNotification("MMC2", message)
+        showNotification("Multi-ConsciousChat", message)
     }
 
     private fun showDesktopNotification(title: String, message: String) {
@@ -54,9 +59,23 @@ class NotificationService(
             // 使用Java AWT实现桌面通知
             if (java.awt.SystemTray.isSupported()) {
                 val tray = java.awt.SystemTray.getSystemTray()
-                val image = java.awt.Toolkit.getDefaultToolkit().createImage("") // 使用默认图标
+                // 尝试加载MMC2图标
+                val iconUrl = this::class.java.getResource("/img/MMC2.ico") 
+                    ?: this::class.java.getResource("/img/MMC2.png")
+                    ?: this::class.java.getResource("/icons/MMC2.ico")
+                    ?: this::class.java.getResource("/icons/MMC2.png")
                 
-                val trayIcon = java.awt.TrayIcon(image, "MMC2")
+                val image: java.awt.Image = if (iconUrl != null) {
+                    java.awt.Toolkit.getDefaultToolkit().createImage(iconUrl)
+                } else {
+                    // 如果找不到图标文件，使用默认图标
+                    logger.warn("MMC2 icon not found, using default icon")
+                    // 创建一个空的图像
+                    java.awt.Toolkit.getDefaultToolkit().createImage(java.awt.image.BufferedImage(1, 1, java.awt.image.BufferedImage.TYPE_INT_ARGB).source)
+                }
+                
+                // 使用MMC2的全名作为托盘图标提示
+                val trayIcon = java.awt.TrayIcon(image, MMC2.FULL_NAME)
                 trayIcon.isImageAutoSize = true
                 
                 val popupMenu = java.awt.PopupMenu()

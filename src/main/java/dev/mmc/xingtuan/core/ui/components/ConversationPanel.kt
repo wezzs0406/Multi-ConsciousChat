@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -38,7 +39,8 @@ fun ConversationPanel(
     currentConversationId: String,
     conversationsList: List<Conversation>,
     onMessageSend: (String) -> Unit,
-    currentTheme: AppTheme
+    currentTheme: AppTheme,
+    scrollToMessageId: String? = null // 添加可选的滚动到消息ID参数
 ) {
     val currentConversation = conversationsList.find { it.id == currentConversationId }
     var messageText by remember { mutableStateOf("") }
@@ -61,7 +63,26 @@ fun ConversationPanel(
         }
 
         // 消息列表
+        val listState = rememberLazyListState()
+        
+        // 如果需要滚动到特定消息，则执行滚动
+        LaunchedEffect(scrollToMessageId, currentConversationId) {
+            if (scrollToMessageId != null && currentConversation != null) {
+                // 查找目标消息在列表中的索引
+                val messageIndex = currentConversation.messages.indexOfFirst { it.id == scrollToMessageId }
+                if (messageIndex != -1) {
+                    // 延迟一帧以确保UI完全渲染后再滚动
+                    kotlinx.coroutines.delay(100)
+                    // 使用animateScrollToItem实现平滑滚动动画
+                    listState.animateScrollToItem(messageIndex)
+                    // 添加额外延迟确保滚动完成
+                    kotlinx.coroutines.delay(200)
+                }
+            }
+        }
+        
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -70,7 +91,13 @@ fun ConversationPanel(
         ) {
             if (currentConversation != null) {
                 items(currentConversation.messages) { message ->
-                    MessageItem(message = message, isCurrentMember = message.sender.id == systemConfig.currentMemberId, currentTheme = currentTheme, systemConfig = systemConfig)
+                    MessageItem(
+                        message = message, 
+                        isCurrentMember = message.sender.id == systemConfig.currentMemberId, 
+                        currentTheme = currentTheme, 
+                        systemConfig = systemConfig,
+                        isHighlighted = message.id == scrollToMessageId // 高亮显示目标消息
+                    )
                 }
             }
         }
@@ -141,7 +168,7 @@ fun ConversationPanel(
 }
 
 @Composable
-fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppTheme, systemConfig: SystemConfig) {
+fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppTheme, systemConfig: SystemConfig, isHighlighted: Boolean = false) {
     // 判断是否为米白主题
     val isRiceWhiteTheme = currentTheme.name == "米白"
     val isGreenTheme = currentTheme.name == "自然绿"
@@ -215,9 +242,11 @@ fun MessageItem(message: Message, isCurrentMember: Boolean, currentTheme: AppThe
             },
             color = backgroundColor,
             elevation = if (isCurrentMember) 2.dp else 1.dp,  // 降低阴影，更现代
-            border = if (!isCurrentMember && !isRiceWhiteTheme)
+            border = if (isHighlighted) {
+                BorderStroke(2.dp, currentTheme.primaryColor)  // 高亮消息使用粗边框
+            } else if (!isCurrentMember && !isRiceWhiteTheme) {
                 BorderStroke(0.5.dp, currentTheme.primaryColor.copy(alpha = 0.15f))
-            else null  // 米白主题下去掉边框，更简洁
+            } else null  // 米白主题下去掉边框，更简洁
         ) {
             Column(
                 modifier = Modifier

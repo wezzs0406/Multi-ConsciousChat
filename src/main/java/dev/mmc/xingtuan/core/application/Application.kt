@@ -17,6 +17,13 @@ import org.slf4j.LoggerFactory
 private val logger: Logger = LoggerFactory.getLogger("Application")
 
 fun main() = application {
+    // 确保日志目录存在
+    val logsDir = java.io.File(System.getProperty("user.home"), "MMC2/logs")
+    if (!logsDir.exists()) {
+        logsDir.mkdirs()
+        logger.info("Created logs directory: {}", logsDir.absolutePath)
+    }
+    
     Window(
         onCloseRequest = ::exitApplication,
         title = MMC2.FULL_NAME,

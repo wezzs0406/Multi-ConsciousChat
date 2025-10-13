@@ -5,10 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -97,9 +100,16 @@ fun ConversationListPanel(
     var showCreateDialog by remember { mutableStateOf(false) }
     var showMemberSettings by remember { mutableStateOf(false) }
     var conversationsState by remember { mutableStateOf(conversations) }
-    var currentConversationIdState by remember { mutableStateOf(currentConversationId) }
+    // 修复bug：让currentConversationIdState响应外部传入的currentConversationId变化
+    var currentConversationIdState by remember(currentConversationId) { mutableStateOf(currentConversationId) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var conversationToRename by remember { mutableStateOf<Conversation?>(null) }
+    
+    // 监听外部currentConversationId变化，同步更新本地状态
+    // 这样确保搜索结果点击后，左边对话列表能正确显示选中状态
+    LaunchedEffect(currentConversationId) {
+        currentConversationIdState = currentConversationId
+    }
 
     Column(
         modifier = Modifier
@@ -234,36 +244,6 @@ fun ConversationListPanel(
     )
     }
 
-    // 成员设置对话框
-    if (showMemberSettings) {
-        MemberSettingsDialog(
-            members = MemberManager.membersList,
-            onDismiss = { showMemberSettings = false },
-            onMemberSelected = { memberId: String ->
-                // 切换成员并触发保存
-                MemberManager.currentMemberId = memberId
-
-                onUpdateSystemConfig()
-            },
-            onMemberCreated = { name: String, tags: String ->
-                // 创建新对话
-                val newConversation = Conversation(
-                    id = UUID.randomUUID().toString(),
-                    name = name,
-                    messages = emptyList()
-                )
-                ConversationManager.conversationsList.add(newConversation)
-                // 更新UI状态
-                conversationsState = ConversationManager.conversationsList.toList()
-                currentConversationIdState = newConversation.id
-                ConversationManager.currentConversationId = newConversation.id
-                onUpdateConversationConfig()
-                showCreateDialog = false
-            },
-            currentTheme = GlobalTheme.value,
-            systemConfig = systemConfig
-        )
-    }
 
     // 成员设置对话框
     if (showMemberSettings) {
@@ -447,7 +427,7 @@ fun CreateConversationDialog(
                     fontWeight = FontWeight.Bold,
                     fontSize = (systemConfig.fontSize * 1.375).sp  // 22sp = 16sp * 1.375
                 ),
-                color = MaterialTheme.colors.primary
+                color = currentTheme.onBackgroundColor
             )
         },
         text = {
@@ -457,7 +437,7 @@ fun CreateConversationDialog(
                 Text(
                     "请输入新对话的名称",
                     style = MaterialTheme.typography.body1,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
+                    color = currentTheme.onBackgroundColor.copy(alpha = 0.8f),
                     modifier = Modifier.padding(bottom = 16.dp),
                     fontSize = systemConfig.fontSize.sp
                 )
@@ -523,7 +503,7 @@ fun CreateConversationDialog(
                 )
             }
         },
-        shape = MaterialTheme.shapes.large,
+        shape = RoundedCornerShape(16.dp),
         backgroundColor = MaterialTheme.colors.surface,
         contentColor = MaterialTheme.colors.onSurface,
         modifier = Modifier.fillMaxWidth(0.9f)
@@ -552,7 +532,7 @@ fun MemberSettingsDialog(
                     fontWeight = FontWeight.Bold,
                     fontSize = (systemConfig.fontSize * 1.375).sp  // 22sp = 16sp * 1.375
                 ),
-                color = MaterialTheme.colors.primary
+                color = currentTheme.onBackgroundColor
             )
         },
         text = {
@@ -568,7 +548,7 @@ fun MemberSettingsDialog(
                         fontSize = (systemConfig.fontSize * 1.125).sp  // 18sp = 16sp * 1.125
                     ),
                     modifier = Modifier.padding(bottom = 12.dp),
-                    color = MaterialTheme.colors.primary
+                    color = currentTheme.onBackgroundColor
                 )
                 membersState.forEach { member ->
                     Card(
@@ -656,7 +636,7 @@ fun MemberSettingsDialog(
                         fontSize = (systemConfig.fontSize * 1.125).sp  // 18sp = 16sp * 1.125
                     ),
                     modifier = Modifier.padding(bottom = 12.dp),
-                    color = MaterialTheme.colors.primary
+                    color = currentTheme.onBackgroundColor
                 )
                 OutlinedTextField(
                     value = name,
@@ -750,7 +730,7 @@ fun MemberSettingsDialog(
                 )
             }
         },
-        shape = MaterialTheme.shapes.large,
+        shape = RoundedCornerShape(16.dp),
         backgroundColor = MaterialTheme.colors.surface,
         contentColor = MaterialTheme.colors.onSurface,
         modifier = Modifier.fillMaxWidth(0.9f)
@@ -798,6 +778,14 @@ fun MultiAppScreen(
             membersList = MemberManager.membersList.toList()
         )
         dataRepository.saveAll()
+        
+        // 在切换成员时显示通知（如果启用了通知功能）
+        if (systemConfig.enableNotifications) {
+            val currentMember = MemberManager.membersList.find { it.id == MemberManager.currentMemberId }
+            if (currentMember != null) {
+                notificationService.showSystemNotification("已切换到成员: ${currentMember.name}")
+            }
+        }
     }
 
     // 监听对话变化并保存数据
@@ -853,12 +841,26 @@ fun MultiAppScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
+    var showSearchDialog by remember { mutableStateOf(false) }
+    
+    // 用于跟踪需要滚动到的消息ID，用于实现搜索结果定位功能
+    var scrollToMessageId by remember { mutableStateOf<String?>(null) }
+    
+    // 自动清除高亮效果的延时机制，提升用户体验
+    LaunchedEffect(scrollToMessageId) {
+        if (scrollToMessageId != null) {
+            // 3秒后自动清除高亮效果，避免界面一直显示高亮状态
+            // 这样用户可以清楚地看到搜索定位的消息，然后自然恢复正常状态
+            kotlinx.coroutines.delay(3000)
+            scrollToMessageId = null
+        }
+    }
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
             onSettingsClick = { showSettingsDialog = true },
             onPersonalizeClick = { showPersonalizeDialog = true },
-            onSearchClick = { logger.info("Search clicked") },
+            onSearchClick = { showSearchDialog = true },
             onAboutClick = { showAboutDialog = true },
             onExportClick = { showExportDialog = true },
             onImportClick = { showImportDialog = true },
@@ -913,7 +915,8 @@ fun MultiAppScreen(
             systemConfig = systemConfig,
             currentConversationId = conversationConfig.currentConversationId,
             currentTheme = GlobalTheme.value,
-            conversationsList = conversationConfig.conversationsList,
+            conversationsList = ConversationManager.conversationsList.toList(), // 直接从ConversationManager获取最新数据
+            scrollToMessageId = scrollToMessageId,
             onMessageSend = { message ->
                 logger.info("Sending message: {}", message)
                 // 实现消息发送逻辑
@@ -1034,5 +1037,36 @@ fun MultiAppScreen(
             dataRepository = dataRepository
         )
     }
+
+    if (showSearchDialog) {
+        SearchDialog(
+            conversations = ConversationManager.conversationsList.toList(), // 直接从ConversationManager获取最新数据
+            onDismiss = { showSearchDialog = false },
+            onConversationSelect = { conversationId, messageId ->
+                // 更新当前对话ID
+                ConversationManager.currentConversationId = conversationId
+                // 确保conversationConfig正确更新，使用当前的对话列表
+                conversationConfig = ConversationConfig(
+                    currentConversationId = conversationId,
+                    conversationsList = ConversationManager.conversationsList.toList()
+                )
+                // 设置需要滚动到的消息ID，用于定位到特定消息
+                scrollToMessageId = messageId
+                logger.info("搜索结果点击：切换到对话ID={}, 消息ID={}", conversationId, messageId)
+                // 关闭搜索对话框
+                showSearchDialog = false
+            },
+            currentTheme = getCurrentAppTheme(),
+            systemConfig = systemConfig
+        )
+    }
 }
+
+/**
+ * 创建新对话对话框组件，提供创建新对话的UI界面
+ */
+
+/**
+ * 成员设置对话框组件，提供成员管理和创建新成员的UI界面
+ */
 }

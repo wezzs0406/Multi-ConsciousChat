@@ -29,10 +29,16 @@ class DataRepository {
         val membersDir = File(mMC2Dir, "members")
         val conversationsDir = File(mMC2Dir, "conversations")
         val messagesDir = File(mMC2Dir, "messages")
+        val logsDir = File(mMC2Dir, "logs")
+        val exportsDir = File(mMC2Dir, "exports")
+        val backupDir = File(mMC2Dir, "backup")
 
         membersDir.mkdirs()
         conversationsDir.mkdirs()
         messagesDir.mkdirs()
+        logsDir.mkdirs()
+        exportsDir.mkdirs()
+        backupDir.mkdirs()
 
         // 配置JSON映射器
         objectMapper = ObjectMapper()
@@ -283,5 +289,61 @@ class DataRepository {
             logger.error("Failed to load theme preference", e)
             null
         }
+    }
+    
+    // ==================== 导出功能 ====================
+    fun exportConversations(file: File, includeMembers: Boolean, includeSettings: Boolean) {
+        val exportData = mutableMapOf<String, Any>()
+        
+        // 导出对话数据
+        exportData["conversations"] = ConversationManager.conversationsList
+        
+        // 如果需要导出成员数据
+        if (includeMembers) {
+            exportData["members"] = MemberManager.membersList
+            exportData["currentMemberId"] = MemberManager.currentMemberId
+        }
+        
+        // 如果需要导出设置数据
+        if (includeSettings) {
+            val appSettings = loadAppSettings()
+            if (appSettings != null) {
+                exportData["appSettings"] = appSettings
+            }
+            val themeIndex = loadThemePreference()
+            if (themeIndex != null) {
+                exportData["themeIndex"] = themeIndex
+            }
+        }
+        
+        // 写入文件
+        file.writeText(objectMapper.writeValueAsString(exportData))
+        logger.info("Conversations exported to: {}", file.absolutePath)
+    }
+    
+    fun exportMembers(file: File) {
+        val exportData = mutableMapOf<String, Any>()
+        exportData["members"] = MemberManager.membersList
+        exportData["currentMemberId"] = MemberManager.currentMemberId
+        
+        file.writeText(objectMapper.writeValueAsString(exportData))
+        logger.info("Members exported to: {}", file.absolutePath)
+    }
+    
+    fun exportSettings(file: File) {
+        val exportData = mutableMapOf<String, Any>()
+        
+        val appSettings = loadAppSettings()
+        if (appSettings != null) {
+            exportData["appSettings"] = appSettings
+        }
+        
+        val themeIndex = loadThemePreference()
+        if (themeIndex != null) {
+            exportData["themeIndex"] = themeIndex
+        }
+        
+        file.writeText(objectMapper.writeValueAsString(exportData))
+        logger.info("Settings exported to: {}", file.absolutePath)
     }
 }
