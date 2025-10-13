@@ -12,12 +12,4 @@ public class MMC2 {
     public static final String ICON_PATH = "/img/MMC2.ico";
     public static final String DATA_EXPORT_FORMAT = "JSON";
     public static final String DATA_IMPORT_FORMAT = "JSON";
-
-    // 主题配置
-    public static final class Theme {
-        public static final String DEFAULT_THEME = "默认蓝";
-        public static final String[] AVAILABLE_THEMES = {
-            "默认蓝", "温柔紫", "自然绿", "温暖橙", "深邃夜"
-        };
-    }
 }

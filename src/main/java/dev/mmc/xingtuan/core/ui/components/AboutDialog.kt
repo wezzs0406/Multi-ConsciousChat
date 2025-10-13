@@ -209,9 +209,10 @@ fun AboutDialog(
                                 .fillMaxWidth()
                                 .clickable {
                                     try {
-                                        val projectUrl = "https://github.com/wezzs0406/Multi-ConsciousChat"
+                                        val projectUrl = MMC2.WEBSITE
                                         java.awt.Desktop.getDesktop().browse(java.net.URI(projectUrl))
                                     } catch (e: Exception) {
+
                                         // 处理无法打开浏览器的情况
                                     }
                                 }
@@ -226,7 +227,7 @@ fun AboutDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "github.com/wezzs0406/Multi-ConsciousChat",
+                                text = MMC2.WEBSITE,
                                 style = MaterialTheme.typography.caption.copy(
                                     color = GlobalTheme.value.primaryColor,
                                     fontWeight = FontWeight.Medium

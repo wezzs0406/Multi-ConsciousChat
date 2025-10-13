@@ -1,8 +1,5 @@
 package dev.mmc.xingtuan.core.core.member
 
-import java.time.Instant
-import java.util.*
-
 data class Consciousness(
     val id: String,
     val name: String,
